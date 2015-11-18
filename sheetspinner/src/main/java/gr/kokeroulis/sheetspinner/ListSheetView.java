@@ -33,6 +33,7 @@ public class ListSheetView extends FrameLayout {
     protected final int originalListPaddingTop;
     private WeakReference<BottomSheetLayout> mLayout;
     private String mTitle;
+    private boolean mEnabled;
 
     public ListSheetView(final Context context, @Nullable final CharSequence title,
                          final OnSheetItemClickListener listener,
@@ -48,12 +49,14 @@ public class ListSheetView extends FrameLayout {
             absListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                 @Override
                 public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                    if (!mEnabled) {
+                        dismiss();
+                        return;
+                    }
                     mTitle = adapter.getItem(position);
                     listener.onSheetItemClick(mTitle, position);
                     selectionListener.onSelectionChanged(mTitle);
-                    if (mLayout != null && mLayout.get() != null) {
-                        mLayout.get().dismissSheet();
-                    }
+                    dismiss();
                 }
             });
         }
@@ -61,9 +64,31 @@ public class ListSheetView extends FrameLayout {
         originalListPaddingTop = absListView.getPaddingTop();
     }
 
+    private void dismiss() {
+        if (mLayout != null && mLayout.get() != null) {
+            mLayout.get().dismissSheet();
+        }
+    }
+
     public void setTitles(List<String> titles) {
         mValues = titles;
         mTitle = titles.get(0);
+    }
+
+    public void setEnabled(boolean enable) {
+        mEnabled = enable;
+    }
+
+    public boolean getEnabled() {
+        return mEnabled;
+    }
+
+    public void setDefault(String title) {
+        mTitle = title;
+    }
+
+    public String getDefault() {
+        return mTitle;
     }
 
     @Override

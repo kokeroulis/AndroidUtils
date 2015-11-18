@@ -79,6 +79,34 @@ public class SheetSpinner extends FrameLayout {
         super.onRestoreInstanceState(state);
     }
 
+    public void setEnabled(boolean enabled) {
+        if (mSheetList != null) {
+            mSheetList.setEnabled(enabled);
+        }
+    }
+
+    public boolean getEnabled() {
+        return mSheetList != null && mSheetList.getEnabled();
+    }
+
+    public void setDefault(String title) {
+        if (mSheetList != null) {
+            mSheetList.setDefault(title);
+        }
+
+        mTitle.setText(title);
+    }
+
+    public String getDefault() {
+        if (mSheetList != null) {
+            return mSheetList.getDefault();
+        } else if (mTitles != null) {
+            return mTitles.get(0);
+        } else {
+            return "";
+        }
+    }
+
     @Override
     protected void onAttachedToWindow() {
         super.onAttachedToWindow();
