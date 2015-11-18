@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <style name="SegmentedControlTheme" parent="Theme.AppCompat.Light.NoActionBar">
+        <item name="buttonStyle">@style/SegmentedButton</item>
+    </style>
+
+    <style name="SegmentedButton">
+        <item name="android:gravity">center</item>
+        <item name="android:button">@android:color/transparent</item>
+    </style>
+</resources>
