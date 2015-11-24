@@ -17,6 +17,8 @@ package gr.kokeroulis.jsonapiparser;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import com.squareup.moshi.JsonAdapter;
+import com.squareup.moshi.Moshi;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
@@ -24,7 +26,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -41,10 +42,10 @@ public class JsonApiConverter implements Converter {
 
     private static String RELATIONSHIP_KEY = "relationships";
     private static String ATTRIBUTES_KEY = "attributes";
-    private Gson mGson;
+    private Moshi mMoshi;
 
-    public JsonApiConverter(Gson gson) {
-        mGson = gson;
+    public JsonApiConverter(Moshi moshi) {
+        mMoshi = moshi;
     }
 
     @Override
@@ -53,8 +54,12 @@ public class JsonApiConverter implements Converter {
             InputStream in = body.in();
             String json = fromJsonApi(fromStream(in), type);
 
-            if(String.class.equals(type)) return json;
-            else return mGson.fromJson(json, type);
+            if(String.class.equals(type)) {
+                return json;
+            }
+            else {
+                return mMoshi.adapter(type).fromJson(json);
+            }
 
         } catch (Exception e) {
             throw new ConversionException(e);
@@ -70,7 +75,7 @@ public class JsonApiConverter implements Converter {
                 String emptyJson = (String) object;
                 // Send an empty body if we have no data.
                 // We need this for authorization
-                if (emptyJson != null && emptyJson.isEmpty()) {
+                if (emptyJson.isEmpty()) {
                     return new JsonTypedOutput("");
                 }
             }
@@ -102,7 +107,7 @@ public class JsonApiConverter implements Converter {
         @Override public void writeTo(OutputStream out) throws IOException { out.write(jsonString.getBytes()); }
     }
 
-    private static String fromStream(InputStream in) throws IOException {
+    private String fromStream(InputStream in) throws IOException {
         BufferedReader reader = new BufferedReader(new InputStreamReader(in));
         StringBuilder out = new StringBuilder();
         String line;
@@ -113,7 +118,7 @@ public class JsonApiConverter implements Converter {
         return out.toString();
     }
 
-    private static String fromJsonApi(String json, Type type) throws UnsupportedEncodingException {
+    private String fromJsonApi(String json, Type type) throws IOException {
         Gson gson = new Gson();
 
         HashMap<String, Object> responseHash;
@@ -129,7 +134,8 @@ public class JsonApiConverter implements Converter {
             return json;
         }
 
-        JsonApiResponse response = gson.fromJson(json, JsonApiResponse.class);
+        JsonAdapter<JsonApiResponse> adapter = mMoshi.adapter(JsonApiResponse.class);
+        JsonApiResponse response = adapter.fromJson(json);
         List<Map<String, Object>> data = new ArrayList<>();
 
         response.data()
@@ -176,15 +182,19 @@ public class JsonApiConverter implements Converter {
         String listTypeToString = TypeToken.get(type).getRawType().toString();
         boolean isInstanceOfList = listTypeToString.equals("interface java.util.List");
         if(data.size() == 1 && !isInstanceOfList) {
-            formatted = data.get(0) == null ? json : gson.toJson(data.get(0));
+            if (data.get(0) == null) {
+                return json;
+            } else {
+                formatted = mMoshi.adapter(Object.class).toJson(data.get(0));
+            }
         } else {
-            formatted =  gson.toJson(data);
+            formatted =  mMoshi.adapter(Object.class).toJson(data);//gson.toJson(data);
         }
 
         return formatted;
     }
 
-    private static String toJsonApi(Object json) throws Exception {
+    private String toJsonApi(Object json) throws Exception {
         Gson gson = new Gson();
         Map<String,Object> jsonMap = objectToMap(json);
         Map<String,Object> data = new HashMap<>();
@@ -203,18 +213,16 @@ public class JsonApiConverter implements Converter {
         return gson.toJson(data);
     }
 
-    public static HashMap<String, Object> objectToMap(Object object) throws Exception {
+    public HashMap<String, Object> objectToMap(Object object) throws Exception {
         Gson gson = new Gson();
         final String jsonString = gson.toJson(object);
         return objectToMap(jsonString);
     }
 
-    public static HashMap<String, Object> objectToMap(String object) throws Exception {
+    public HashMap<String, Object> objectToMap(String object) throws Exception {
         HashMap<String,Object> jsonMap = new Gson().fromJson(object, new TypeToken<HashMap<String, Object>>() {
         }.getType());
 
         return jsonMap;
     }
-
-
 }
