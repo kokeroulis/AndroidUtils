@@ -15,10 +15,10 @@
  */
 package gr.kokeroulis.jsonapiparser;
 
-import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi;
+import com.squareup.moshi.Types;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
@@ -119,9 +119,7 @@ public class JsonApiConverter implements Converter {
     }
 
     private String fromJsonApi(String json, Type type) throws IOException {
-        Gson gson = new Gson();
-
-        HashMap<String, Object> responseHash;
+        Map<String, Object> responseHash;
         try {
             responseHash = objectToMap(json);
         } catch (Exception e) {
@@ -188,14 +186,13 @@ public class JsonApiConverter implements Converter {
                 formatted = mMoshi.adapter(Object.class).toJson(data.get(0));
             }
         } else {
-            formatted =  mMoshi.adapter(Object.class).toJson(data);//gson.toJson(data);
+            formatted =  mMoshi.adapter(Object.class).toJson(data);
         }
 
         return formatted;
     }
 
     private String toJsonApi(Object json) throws Exception {
-        Gson gson = new Gson();
         Map<String,Object> jsonMap = objectToMap(json);
         Map<String,Object> data = new HashMap<>();
         Map<String, Object> attributes = new HashMap<>();
@@ -210,19 +207,18 @@ public class JsonApiConverter implements Converter {
         jsonMap.put("attributes", attributes);
         data.put("data", jsonMap);
 
-        return gson.toJson(data);
+        return mMoshi.adapter(Object.class).toJson(data);
     }
 
-    public HashMap<String, Object> objectToMap(Object object) throws Exception {
-        Gson gson = new Gson();
-        final String jsonString = gson.toJson(object);
+    public Map<String, Object> objectToMap(Object object) throws Exception {
+        final String jsonString = mMoshi.adapter(Object.class).toJson(object);
         return objectToMap(jsonString);
     }
 
-    public HashMap<String, Object> objectToMap(String object) throws Exception {
-        HashMap<String,Object> jsonMap = new Gson().fromJson(object, new TypeToken<HashMap<String, Object>>() {
-        }.getType());
-
-        return jsonMap;
+    public Map<String, Object> objectToMap(String object) throws Exception {
+        Type hash = Types.newParameterizedType(Map.class, String.class, Object.class);
+        JsonAdapter<HashMap<String, Object>> adapter = mMoshi.adapter(hash);
+        Map<String,Object> jsonHash = adapter.fromJson(object);
+        return jsonHash;
     }
 }
