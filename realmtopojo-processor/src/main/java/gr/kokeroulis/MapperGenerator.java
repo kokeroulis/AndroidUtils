@@ -43,29 +43,34 @@ final class MapperGenerator {
     private String pojoClassName;
     private String realmObjectClassName;
     private String packageName;
+    private TypeSpec.Builder builder;
 
     public MapperGenerator(String packageName) {
         this.packageName = packageName;
     }
 
     public TypeSpec generateClass(List<AnnotatedClass> annos) {
-        TypeSpec.Builder builder = null;
+        builder =  classBuilder(REALM + "MapperToPojo")
+                .addModifiers(PUBLIC, FINAL);
         for (AnnotatedClass annotatedClass : annos) {
-            builder = generateMapper(annotatedClass);
+           generateMapper(annotatedClass);
         }
 
         return builder.build();
     }
 
-    private TypeSpec.Builder generateMapper(AnnotatedClass annotatedClass) {
+    private void generateMapper(AnnotatedClass annotatedClass) {
         pojoClassName = annotatedClass.annotatedClassName;
         realmObjectClassName = REALM + annotatedClass.annotatedClassName;
 
-        TypeSpec.Builder builder =  classBuilder(REALM + "MapperToPojo")
-            .addModifiers(PUBLIC, FINAL);
-
         MethodSpec.Builder from = generateFromRealm();
+        generateEqualFields(from, annotatedClass);
 
+        from.addStatement("return j");
+        builder.addMethod(from.build());
+    }
+
+    private MethodSpec.Builder generateEqualFields(MethodSpec.Builder from, AnnotatedClass annotatedClass) {
         for (Variable variable : annotatedClass.variables) {
             String name = variable.variableName;
             if (GeneratorUtils.isPojo(get(variable.type))) {
@@ -75,10 +80,7 @@ final class MapperGenerator {
             }
         }
 
-        from.addStatement("return j");
-        builder = builder.addMethod(from.build());
-
-        return builder;
+        return from;
     }
 
     private MethodSpec.Builder generateFromRealm() {

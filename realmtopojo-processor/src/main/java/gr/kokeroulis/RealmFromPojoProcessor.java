@@ -17,7 +17,6 @@ package gr.kokeroulis;
 
 import com.google.auto.service.AutoService;
 import com.squareup.javapoet.JavaFile;
-import com.squareup.javapoet.TypeName;
 import com.squareup.javapoet.TypeSpec;
 
 import java.io.IOException;
@@ -36,8 +35,8 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 
-import static gr.kokeroulis.Utils.getPackageName;
 import static com.squareup.javapoet.JavaFile.builder;
+import static gr.kokeroulis.Utils.getPackageName;
 import static java.util.Collections.singleton;
 import static javax.lang.model.SourceVersion.latestSupported;
 import static javax.tools.Diagnostic.Kind.ERROR;
@@ -87,7 +86,7 @@ public class RealmFromPojoProcessor extends AbstractProcessor {
         }
         try {
             generate(annotatedClasses);
-        } catch (NoPackageNameException | IOException e) {
+        } catch (Exception e) {
             messager.printMessage(ERROR, "Couldn't generate class: " + e.getMessage());
         }
         return true;
@@ -128,7 +127,7 @@ public class RealmFromPojoProcessor extends AbstractProcessor {
         return new AnnotatedClass(annotatedClass , variables);
     }
 
-    private void generate(List<AnnotatedClass> annos) throws NoPackageNameException, IOException {
+    private void generate(List<AnnotatedClass> annos) throws Exception {
         if (annos.size() == 0) {
             return;
         }
