@@ -19,6 +19,8 @@ import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.TypeSpec;
 
+import java.util.List;
+
 import static com.squareup.javapoet.ClassName.get;
 import static com.squareup.javapoet.TypeSpec.classBuilder;
 import static javax.lang.model.element.Modifier.FINAL;
@@ -46,8 +48,16 @@ final class MapperGenerator {
         this.packageName = packageName;
     }
 
-    public TypeSpec generateClass(AnnotatedClass annotatedClass) {
+    public TypeSpec generateClass(List<AnnotatedClass> annos) {
+        TypeSpec.Builder builder = null;
+        for (AnnotatedClass annotatedClass : annos) {
+            builder = generateMapper(annotatedClass);
+        }
 
+        return builder.build();
+    }
+
+    private TypeSpec.Builder generateMapper(AnnotatedClass annotatedClass) {
         pojoClassName = annotatedClass.annotatedClassName;
         realmObjectClassName = REALM + annotatedClass.annotatedClassName;
 
@@ -58,13 +68,17 @@ final class MapperGenerator {
 
         for (Variable variable : annotatedClass.variables) {
             String name = variable.variableName;
-            from.addStatement("j.$N = r.$N()", name, GeneratorUtils.toGetter(name));
+            if (GeneratorUtils.isPojo(get(variable.type))) {
+                from.addStatement("j.$N = r.$N()", name, GeneratorUtils.toGetter(name));
+            } else {
+                from.addStatement("j.$N = RealmMapperToPojo.fromRealm(r.$N())", name, GeneratorUtils.toGetter(name));
+            }
         }
 
         from.addStatement("return j");
         builder = builder.addMethod(from.build());
 
-        return builder.build();
+        return builder;
     }
 
     private MethodSpec.Builder generateFromRealm() {

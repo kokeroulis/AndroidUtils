@@ -17,6 +17,7 @@ package gr.kokeroulis;
 
 import com.google.auto.service.AutoService;
 import com.squareup.javapoet.JavaFile;
+import com.squareup.javapoet.TypeName;
 import com.squareup.javapoet.TypeSpec;
 
 import java.io.IOException;
@@ -87,7 +88,7 @@ public class RealmFromPojoProcessor extends AbstractProcessor {
         try {
             generate(annotatedClasses);
         } catch (NoPackageNameException | IOException e) {
-            messager.printMessage(ERROR, "Couldn't generate class");
+            messager.printMessage(ERROR, "Couldn't generate class: " + e.getMessage());
         }
         return true;
     }
@@ -136,17 +137,17 @@ public class RealmFromPojoProcessor extends AbstractProcessor {
 
         for (AnnotatedClass annotatedClass : annos) {
             // Generate Realm object
-            RealmObjectGenerator realmObject = new RealmObjectGenerator();
+            RealmObjectGenerator realmObject = new RealmObjectGenerator(packageName);
             TypeSpec generatedClass = realmObject.generateClass(annotatedClass);
             JavaFile javaFile = builder(packageName, generatedClass).build();
             javaFile.writeTo(processingEnv.getFiler());
-
-            // generate RealmMapperToPojo
-            MapperGenerator mapper = new MapperGenerator(packageName);
-            TypeSpec mapperClass = mapper.generateClass(annotatedClass);
-            JavaFile mapperFile = builder(packageName, mapperClass).build();
-            mapperFile.writeTo(processingEnv.getFiler());
         }
+
+        // generate RealmMapperToPojo
+        MapperGenerator mapper = new MapperGenerator(packageName);
+        TypeSpec mapperClass = mapper.generateClass(annos);
+        JavaFile mapperFile = builder(packageName, mapperClass).build();
+        mapperFile.writeTo(processingEnv.getFiler());
     }
 }
 
