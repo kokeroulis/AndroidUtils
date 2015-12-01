@@ -19,6 +19,8 @@ import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.TypeSpec;
 
+import java.util.List;
+
 import static com.squareup.javapoet.ClassName.get;
 import static com.squareup.javapoet.TypeSpec.classBuilder;
 import static javax.lang.model.element.Modifier.FINAL;
@@ -41,30 +43,44 @@ final class MapperGenerator {
     private String pojoClassName;
     private String realmObjectClassName;
     private String packageName;
+    private TypeSpec.Builder builder;
 
     public MapperGenerator(String packageName) {
         this.packageName = packageName;
     }
 
-    public TypeSpec generateClass(AnnotatedClass annotatedClass) {
+    public TypeSpec generateClass(List<AnnotatedClass> annos) {
+        builder = classBuilder(REALM + "MapperToPojo")
+                  .addModifiers(PUBLIC, FINAL);
+        for (AnnotatedClass annotatedClass : annos) {
+           generateMapper(annotatedClass);
+        }
 
+        return builder.build();
+    }
+
+    private void generateMapper(AnnotatedClass annotatedClass) {
         pojoClassName = annotatedClass.annotatedClassName;
         realmObjectClassName = REALM + annotatedClass.annotatedClassName;
 
-        TypeSpec.Builder builder =  classBuilder(REALM + "MapperToPojo")
-            .addModifiers(PUBLIC, FINAL);
-
         MethodSpec.Builder from = generateFromRealm();
-
-        for (Variable variable : annotatedClass.variables) {
-            String name = variable.variableName;
-            from.addStatement("j.$N = r.$N()", name, GeneratorUtils.toGetter(name));
-        }
+        generateEqualFields(from, annotatedClass);
 
         from.addStatement("return j");
-        builder = builder.addMethod(from.build());
+        builder.addMethod(from.build());
+    }
 
-        return builder.build();
+    private MethodSpec.Builder generateEqualFields(MethodSpec.Builder from, AnnotatedClass annotatedClass) {
+        for (Variable variable : annotatedClass.variables) {
+            String name = variable.variableName;
+            if (GeneratorUtils.isPojo(get(variable.type))) {
+                from.addStatement("j.$N = r.$N()", name, GeneratorUtils.toGetter(name));
+            } else {
+                from.addStatement("j.$N = RealmMapperToPojo.fromRealm(r.$N())", name, GeneratorUtils.toGetter(name));
+            }
+        }
+
+        return from;
     }
 
     private MethodSpec.Builder generateFromRealm() {

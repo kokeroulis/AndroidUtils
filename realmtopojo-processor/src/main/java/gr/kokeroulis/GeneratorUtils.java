@@ -17,18 +17,34 @@ package gr.kokeroulis;
 
 import com.squareup.javapoet.TypeName;
 
-import javax.lang.model.type.TypeMirror;
+import static com.squareup.javapoet.ClassName.get;
 
 public class GeneratorUtils {
-    public static TypeName getType(TypeMirror type) {
-        return TypeName.get(type);
+    public static TypeName getType(TypeName type, String packageName) {
+        if (isPojo(type)) {
+            return type;
+        } else {
+            int packageSize = packageName.length() + 1;
+            int classSize = type.toString().length();
+            String name = type.toString().substring(packageSize, classSize);
+            type = get(packageName, "Realm" + GeneratorUtils.upperFirstLater(name));
+            return type;
+        }
     }
 
     public static String toGetter(String fieldName) {
-        return "get" + Character.toUpperCase(fieldName.charAt(0)) + fieldName.substring(1);
+        return "get" + upperFirstLater(fieldName);
     }
 
     public static String toSetter(String fieldName) {
-        return "set" + Character.toUpperCase(fieldName.charAt(0)) + fieldName.substring(1);
+        return "set" + upperFirstLater(fieldName);
+    }
+
+    public static String upperFirstLater(String fieldName) {
+        return Character.toUpperCase(fieldName.charAt(0)) + fieldName.substring(1);
+    }
+
+    public static boolean isPojo(TypeName type) {
+        return type.toString().equals("java.lang.String") || type.isPrimitive();
     }
 }

@@ -35,8 +35,8 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 
-import static gr.kokeroulis.Utils.getPackageName;
 import static com.squareup.javapoet.JavaFile.builder;
+import static gr.kokeroulis.Utils.getPackageName;
 import static java.util.Collections.singleton;
 import static javax.lang.model.SourceVersion.latestSupported;
 import static javax.tools.Diagnostic.Kind.ERROR;
@@ -86,8 +86,8 @@ public class RealmFromPojoProcessor extends AbstractProcessor {
         }
         try {
             generate(annotatedClasses);
-        } catch (NoPackageNameException | IOException e) {
-            messager.printMessage(ERROR, "Couldn't generate class");
+        } catch (Exception e) {
+            messager.printMessage(ERROR, "Couldn't generate class: " + e.getMessage());
         }
         return true;
     }
@@ -127,7 +127,7 @@ public class RealmFromPojoProcessor extends AbstractProcessor {
         return new AnnotatedClass(annotatedClass , variables);
     }
 
-    private void generate(List<AnnotatedClass> annos) throws NoPackageNameException, IOException {
+    private void generate(List<AnnotatedClass> annos) throws Exception {
         if (annos.size() == 0) {
             return;
         }
@@ -136,17 +136,17 @@ public class RealmFromPojoProcessor extends AbstractProcessor {
 
         for (AnnotatedClass annotatedClass : annos) {
             // Generate Realm object
-            RealmObjectGenerator realmObject = new RealmObjectGenerator();
+            RealmObjectGenerator realmObject = new RealmObjectGenerator(packageName);
             TypeSpec generatedClass = realmObject.generateClass(annotatedClass);
             JavaFile javaFile = builder(packageName, generatedClass).build();
             javaFile.writeTo(processingEnv.getFiler());
-
-            // generate RealmMapperToPojo
-            MapperGenerator mapper = new MapperGenerator(packageName);
-            TypeSpec mapperClass = mapper.generateClass(annotatedClass);
-            JavaFile mapperFile = builder(packageName, mapperClass).build();
-            mapperFile.writeTo(processingEnv.getFiler());
         }
+
+        // generate RealmMapperToPojo
+        MapperGenerator mapper = new MapperGenerator(packageName);
+        TypeSpec mapperClass = mapper.generateClass(annos);
+        JavaFile mapperFile = builder(packageName, mapperClass).build();
+        mapperFile.writeTo(processingEnv.getFiler());
     }
 }
 
