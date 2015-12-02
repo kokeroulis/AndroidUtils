@@ -16,6 +16,7 @@
 package gr.kokeroulis;
 
 import com.squareup.javapoet.ClassName;
+import com.squareup.javapoet.FieldSpec;
 import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.ParameterizedTypeName;
 import com.squareup.javapoet.TypeName;
@@ -65,7 +66,13 @@ final class RealmObjectGenerator {
     private TypeSpec.Builder addVariable(String variableName) {
         builder = addGetter(variableName);
         builder = addSetter(variableName);
-        return builder.addField(type, variableName, Modifier.PRIVATE);
+        FieldSpec.Builder field = FieldSpec.builder(type, variableName, Modifier.PRIVATE);
+        if (variableName.equals("id")) {
+            ClassName primaryKey = get("io.realm.annotations", "PrimaryKey");
+            field.addAnnotation(primaryKey).build();
+        }
+
+        return builder.addField(field.build());
     }
 
     private TypeSpec.Builder addGetter(String variableName) {
