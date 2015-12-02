@@ -17,6 +17,7 @@ package gr.kokeroulis;
 
 import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.MethodSpec;
+import com.squareup.javapoet.ParameterizedTypeName;
 import com.squareup.javapoet.TypeName;
 import com.squareup.javapoet.TypeSpec;
 
@@ -43,13 +44,23 @@ final class RealmObjectGenerator {
                 .superclass(realmObjectClass)
                 .addModifiers(PUBLIC);
         for (Variable variable : annotatedClass.variables) {
-            type = GeneratorUtils.getType(get(variable.type), packageName);
-            builder = addVariable(variable.variableName);
+            if (GeneratorUtils.isPojo(variable.type)) {
+                type = GeneratorUtils.getType(get(variable.type), packageName);
+                builder = addVariable(variable.variableName);
+            } else if (!GeneratorUtils.isPojo(variable.type) && !GeneratorUtils.isList(variable.type)) {
+                type = GeneratorUtils.getType(get(variable.type), packageName);
+                builder = addVariable(variable.variableName);
+            } else {
+                TypeName enclosedObjectClass = GeneratorUtils.getListParameterizedTypeName(variable.type);
+                type = GeneratorUtils.getType(enclosedObjectClass, packageName);
+                ClassName realmList = get("io.realm", "RealmList");
+                type = ParameterizedTypeName.get(realmList, type);
+                builder = addVariable(variable.variableName);
+            }
         }
 
         return builder.build();
     }
-
 
     private TypeSpec.Builder addVariable(String variableName) {
         builder = addGetter(variableName);

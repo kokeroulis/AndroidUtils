@@ -17,6 +17,9 @@ package gr.kokeroulis;
 
 import com.squareup.javapoet.TypeName;
 
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.TypeMirror;
+
 import static com.squareup.javapoet.ClassName.get;
 
 public class GeneratorUtils {
@@ -46,5 +49,22 @@ public class GeneratorUtils {
 
     public static boolean isPojo(TypeName type) {
         return type.toString().equals("java.lang.String") || type.isPrimitive();
+    }
+
+    public static boolean isPojo(TypeMirror type) {
+        return isPojo(get(type));
+    }
+
+    public static boolean isList(TypeMirror type) {
+        DeclaredType classType = (DeclaredType) type;
+        for (TypeMirror m : classType.getTypeArguments()) {
+            return true;
+        }
+        return false;
+    }
+
+    public static TypeName getListParameterizedTypeName(TypeMirror type) {
+        DeclaredType classType = (DeclaredType) type;
+        return TypeName.get(classType.getTypeArguments().get(0));
     }
 }

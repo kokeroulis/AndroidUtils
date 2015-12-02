@@ -142,11 +142,12 @@ public class RealmFromPojoProcessor extends AbstractProcessor {
             javaFile.writeTo(processingEnv.getFiler());
         }
 
+        // TODO restore me!
         // generate RealmMapperToPojo
-        MapperGenerator mapper = new MapperGenerator(packageName);
-        TypeSpec mapperClass = mapper.generateClass(annos);
-        JavaFile mapperFile = builder(packageName, mapperClass).build();
-        mapperFile.writeTo(processingEnv.getFiler());
+        //MapperGenerator mapper = new MapperGenerator(packageName);
+        //TypeSpec mapperClass = mapper.generateClass(annos);
+        //JavaFile mapperFile = builder(packageName, mapperClass).build();
+        //mapperFile.writeTo(processingEnv.getFiler());
     }
 }
 
