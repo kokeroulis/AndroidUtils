@@ -60,6 +60,7 @@ final class MapperGenerator {
 
     private final String REALM = "Realm";
     private final String FROM_REALM = "fromRealm";
+    private final String TO_REALM = "toRealm";
     private String pojoClassName;
     private String realmObjectClassName;
     private String packageName;
@@ -84,13 +85,18 @@ final class MapperGenerator {
         realmObjectClassName = REALM + annotatedClass.annotatedClassName;
 
         MethodSpec.Builder from = generateFromRealm();
-        generateEqualFields(from, annotatedClass);
+        generateEqualFieldsFrom(from, annotatedClass);
+
+        MethodSpec.Builder to = generateToRealm();
+        generateEqualFieldsTo(to, annotatedClass);
 
         from.addStatement("return j");
+        to.addStatement("return r");
         builder.addMethod(from.build());
+        builder.addMethod(to.build());
     }
 
-    private MethodSpec.Builder generateEqualFields(MethodSpec.Builder from, AnnotatedClass annotatedClass) {
+    private MethodSpec.Builder generateEqualFieldsFrom(MethodSpec.Builder from, AnnotatedClass annotatedClass) {
         for (Variable variable : annotatedClass.variables) {
             String name = variable.variableName;
             if (GeneratorUtils.isPojo(get(variable.type))) {
@@ -135,5 +141,30 @@ final class MapperGenerator {
             .addParameter(realmType, "r")
             .addStatement("$T j = new $T()", pojoType, pojoType)
             .returns(pojoType);
+    }
+
+    private MethodSpec.Builder generateToRealm() {
+        ClassName pojoType = get(packageName, pojoClassName);
+        ClassName realmType = get(packageName, realmObjectClassName);
+        return MethodSpec.methodBuilder(TO_REALM)
+            .addModifiers(PUBLIC, STATIC)
+            .addParameter(pojoType, "j")
+            .addStatement("$T r = new $T()", realmType, realmType)
+            .returns(realmType);
+    }
+
+    private MethodSpec.Builder generateEqualFieldsTo(MethodSpec.Builder to, AnnotatedClass annotatedClass) {
+        for (Variable variable : annotatedClass.variables) {
+            String name = variable.variableName;
+            if (GeneratorUtils.isPojo(get(variable.type))) {
+                to.addStatement("r.$N(j.$N)", GeneratorUtils.toSetter(name), name);
+            } else if (!GeneratorUtils.isList(variable.type)){
+                to.addStatement("j.$N = RealmMapperToPojo.fromRealm(r.$N())", name, GeneratorUtils.toGetter(name));
+            } else {
+                to = generateEqualList(to, variable);
+            }
+        }
+
+        return to;
     }
 }
