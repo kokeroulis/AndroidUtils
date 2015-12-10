@@ -31,6 +31,7 @@ import javax.annotation.processing.Processor;
 import javax.annotation.processing.RoundEnvironment;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
@@ -115,12 +116,13 @@ public class RealmFromPojoProcessor extends AbstractProcessor {
             throws NoPackageNameException, IOException {
         List<Variable> variables = new ArrayList<>();
         for (Element element : annotatedClass.getEnclosedElements()) {
-            if (!(element instanceof VariableElement)) {
+            final String variableName = element.getSimpleName().toString();
+            if (!(element instanceof VariableElement)
+                || variableName.equals("CREATOR")) { // exclude parselable creator
                 continue;
             }
 
             VariableElement variableElement = (VariableElement) element;
-            String variableName = variableElement.getSimpleName().toString();
             TypeMirror type = variableElement.asType();
             variables.add(new Variable(variableName, type));
         }
