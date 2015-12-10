@@ -104,14 +104,14 @@ final class MapperGenerator {
             } else if (!GeneratorUtils.isList(variable.type)){
                 from.addStatement("j.$N = RealmMapperToPojo.fromRealm(r.$N())", name, GeneratorUtils.toGetter(name));
             } else {
-                from = generateEqualList(from, variable);
+                from = generateEqualListFrom(from, variable);
             }
         }
 
         return from;
     }
 
-    private MethodSpec.Builder generateEqualList(MethodSpec.Builder from, Variable variable) {
+    private MethodSpec.Builder generateEqualListFrom(MethodSpec.Builder from, Variable variable) {
         // Classes and object types
         TypeName pojoType = GeneratorUtils.getListParameterizedTypeName(variable.type);
         TypeName listType = ParameterizedTypeName.get(get(List.class), pojoType);
@@ -161,10 +161,32 @@ final class MapperGenerator {
             } else if (!GeneratorUtils.isList(variable.type)){
                 to.addStatement("j.$N = RealmMapperToPojo.fromRealm(r.$N())", name, GeneratorUtils.toGetter(name));
             } else {
-                to = generateEqualList(to, variable);
+                to = generateEqualListTo(to, variable);
             }
         }
 
+        return to;
+    }
+
+    private MethodSpec.Builder generateEqualListTo(MethodSpec.Builder to, Variable variable) {
+        // Classes and object types
+        TypeName pojoType = GeneratorUtils.getListParameterizedTypeName(variable.type);
+        TypeName realmType = GeneratorUtils.getType(pojoType, packageName);
+        ClassName realmListClass = get("io.realm", "RealmList");
+        TypeName realmListType = ParameterizedTypeName.get(realmListClass, realmType);
+
+        // Strings for generation
+        final String pojoListName = variable.variableName;
+        final String listEqualStatement = "$N.add(RealmMapperToPojo.toRealm(j.$N.get(i)))";
+        final String forLoop = "for (int i=0; i < j.$N.size(); i++)";
+        final String saveList = "r.$N($N)";
+
+        // Generate
+        to.addStatement("$T $N = new $T()", realmListType, pojoListName, realmListType);
+        to.beginControlFlow(forLoop, pojoListName);
+        to.addStatement(listEqualStatement, pojoListName, pojoListName);
+        to.endControlFlow();
+        to.addStatement(saveList, GeneratorUtils.toSetter(variable.variableName), pojoListName);
         return to;
     }
 }
