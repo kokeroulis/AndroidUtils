@@ -53,8 +53,7 @@ public final class RxRealm {
                 subscriber.onCompleted();
             }
         })
-        .subscribeOn(scheduler)
-        .observeOn(AndroidSchedulers.mainThread());
+        .subscribeOn(scheduler);
     }
 
     public static Observable<Void> transaction(final Realm.Transaction transaction) {
