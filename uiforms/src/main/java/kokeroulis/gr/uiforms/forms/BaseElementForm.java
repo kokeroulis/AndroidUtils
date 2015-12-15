@@ -37,6 +37,8 @@ public abstract class BaseElementForm<Validator extends NumberValidator> extends
     private EditText mEditValue;
     protected Validator mValidator;
     private Subscription sub;
+    private Comparable mMinValue;
+    private Comparable mMaxValue;
 
     public BaseElementForm(Context context) {
         super(context);
@@ -76,10 +78,14 @@ public abstract class BaseElementForm<Validator extends NumberValidator> extends
     }
 
     public Validator getValidator() {
+        if (mValidator == null) {
+            throw new RuntimeException("Forms must set a validator"
+                                       + " before they are being accessed!");
+        }
         return mValidator;
     }
 
-    public void generateValidator(Validator validator) {
+    public void setValidator(Validator validator) {
         mValidator = validator;
         setFilters();
     }

@@ -34,6 +34,5 @@ public class DoubleForm extends BaseElementForm<DoubleValidator> {
     @Override
     protected void onFinishInflate() {
         super.onFinishInflate();
-        generateValidator(new DoubleValidator(0d,50d));
     }
 }

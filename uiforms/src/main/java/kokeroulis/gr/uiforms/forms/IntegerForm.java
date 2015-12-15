@@ -34,6 +34,5 @@ public class IntegerForm extends BaseElementForm<IntegerValidator> {
     @Override
     protected void onFinishInflate() {
         super.onFinishInflate();
-        generateValidator(new IntegerValidator(0,50));
     }
 }
