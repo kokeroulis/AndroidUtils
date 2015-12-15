@@ -19,7 +19,7 @@ public class DoubleValidator extends NumberValidator<Double> {
     }
 
     @Override
-    protected Double charToVal(String source) {
+    public Double charToVal(String source) {
         try {
             return Double.parseDouble(source);
         } catch (NumberFormatException e) {

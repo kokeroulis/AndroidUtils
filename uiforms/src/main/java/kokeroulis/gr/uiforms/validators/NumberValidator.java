@@ -15,7 +15,9 @@ package kokeroulis.gr.uiforms.validators;
 import android.text.InputFilter;
 import android.text.Spanned;
 
-public abstract class NumberValidator<T extends Comparable<T>> implements InputFilter {
+public abstract class NumberValidator<T extends Comparable<T>>
+    extends Validator<T> implements InputFilter {
+
     private final T mMaxVal;
     private final T mMinVal;
     private InvalidInputListener mListener;
@@ -66,5 +68,14 @@ public abstract class NumberValidator<T extends Comparable<T>> implements InputF
         mListener = null;
     }
 
-    protected abstract T charToVal(String source);
+    public abstract T charToVal(String source);
+
+    @Override
+    public boolean isValid() {
+        if (getValue() == null) {
+            return false;
+        } else {
+            return getValue().compareTo(charToVal("0")) == BIGGER;
+        }
+    }
 }

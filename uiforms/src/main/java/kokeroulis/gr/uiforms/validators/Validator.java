@@ -12,18 +12,17 @@ package kokeroulis.gr.uiforms.validators;
     limitations under the License.
     */
 
-public class IntegerValidator extends NumberValidator<Integer> {
+public abstract class Validator<T extends Comparable> {
 
-    public IntegerValidator(Integer minVal, Integer maxVal) {
-        super(minVal, maxVal);
+    private T value;
+
+    public T getValue() {
+        return value;
     }
 
-    @Override
-    public Integer charToVal(String source) {
-        try {
-            return Integer.parseInt(source);
-        } catch (NumberFormatException e) {
-            return -1;
-        }
+    public void setValue(T value) {
+        this.value = value;
     }
+
+    public abstract boolean isValid();
 }

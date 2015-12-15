@@ -27,13 +27,16 @@ import java.util.concurrent.TimeUnit;
 import kokeroulis.gr.uiforms.R;
 import kokeroulis.gr.uiforms.validators.NumberValidator;
 import rx.Observable;
+import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
+import rx.functions.Action1;
 import rx.functions.Func1;
 
 public abstract class BaseElementForm<Validator extends NumberValidator> extends LinearLayout {
 
     private EditText mEditValue;
     protected Validator mValidator;
+    private Subscription sub;
 
     public BaseElementForm(Context context) {
         super(context);
@@ -63,6 +66,17 @@ public abstract class BaseElementForm<Validator extends NumberValidator> extends
     protected void onFinishInflate() {
         super.onFinishInflate();
         mEditValue = (EditText) findViewById(R.id.edit);
+
+        sub = valueChanged().subscribe(new Action1<String>() {
+            @Override
+            public void call(String text) {
+                mValidator.setValue(mValidator.charToVal(text));
+            }
+        });
+    }
+
+    public Validator getValidator() {
+        return mValidator;
     }
 
     public void generateValidator(Validator validator) {
@@ -78,7 +92,7 @@ public abstract class BaseElementForm<Validator extends NumberValidator> extends
         mEditValue.setFilters(new InputFilter[]{mValidator});
     }
 
-    public Observable<String> valueChanged() {
+    protected Observable<String> valueChanged() {
         return RxTextView
             .textChanges(mEditValue)
             .skip(1) // First event is a blank string "".
@@ -96,5 +110,6 @@ public abstract class BaseElementForm<Validator extends NumberValidator> extends
     protected void onDetachedFromWindow() {
         super.onDetachedFromWindow();
         mValidator.clearListener();
+        sub.unsubscribe();
     }
 }
