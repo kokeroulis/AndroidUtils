@@ -1,4 +1,4 @@
-package kokeroulis.gr.uiforms.forms;
+package kokeroulis.gr.uiforms.validators;
 
 /*  Copyright (C) 2015 Antonis Tsiapaliokas
     Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,27 +12,10 @@ package kokeroulis.gr.uiforms.forms;
     limitations under the License.
     */
 
-import android.content.Context;
-import android.util.AttributeSet;
-
-import kokeroulis.gr.uiforms.validators.IntegerValidator;
-
-public class IntegerForm extends NumberForm<IntegerValidator> {
-
-    public IntegerForm(Context context) {
-        this(context, null);
-    }
-
-    public IntegerForm(Context context, AttributeSet attrs) {
-        this(context, attrs, 0);
-    }
-
-    public IntegerForm(Context context, AttributeSet attrs, int defStyleAttr) {
-        super(context, attrs, defStyleAttr);
-    }
+public class SwitchValidator extends Validator<Boolean> {
 
     @Override
-    protected void onFinishInflate() {
-        super.onFinishInflate();
+    public boolean isValid() {
+        return getValue() == null ? false : getValue();
     }
 }

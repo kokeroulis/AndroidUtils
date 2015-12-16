@@ -16,9 +16,8 @@ import android.content.Context;
 import android.util.AttributeSet;
 
 import kokeroulis.gr.uiforms.validators.DoubleValidator;
-import kokeroulis.gr.uiforms.validators.IntegerValidator;
 
-public class DoubleForm extends BaseElementForm<DoubleValidator> {
+public class DoubleForm extends NumberForm<DoubleValidator> {
     public DoubleForm(Context context) {
         this(context, null);
     }

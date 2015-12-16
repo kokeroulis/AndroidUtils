@@ -15,10 +15,7 @@ package kokeroulis.gr.uiforms.forms;
 import android.content.Context;
 import android.text.InputFilter;
 import android.util.AttributeSet;
-import android.view.Gravity;
-import android.view.LayoutInflater;
 import android.widget.EditText;
-import android.widget.LinearLayout;
 
 import com.jakewharton.rxbinding.widget.RxTextView;
 
@@ -32,41 +29,25 @@ import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action1;
 import rx.functions.Func1;
 
-public abstract class BaseElementForm<Validator extends NumberValidator> extends LinearLayout {
+public class NumberForm<Validator extends NumberValidator> extends BaseForm<Validator> {
 
     private EditText mEditValue;
-    protected Validator mValidator;
     private Subscription sub;
-    private Comparable mMinValue;
-    private Comparable mMaxValue;
 
-    public BaseElementForm(Context context) {
+    public NumberForm(Context context) {
         super(context);
-        initUI(context);
     }
 
-    public BaseElementForm(Context context, AttributeSet attrs) {
+    public NumberForm(Context context, AttributeSet attrs) {
         super(context, attrs);
-        initUI(context);
     }
 
-    public BaseElementForm(Context context, AttributeSet attrs, int defStyleAttr) {
+    public NumberForm(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
-        initUI(context);
-    }
-
-    private void initUI(Context context) {
-        setOrientation(LinearLayout.HORIZONTAL);
-        setGravity(Gravity.CENTER_VERTICAL);
-
-        LayoutInflater inflater = (LayoutInflater) context
-            .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        inflater.inflate(R.layout.number_form, this, true);
     }
 
     @Override
-    protected void onFinishInflate() {
-        super.onFinishInflate();
+    protected void setupUi() {
         mEditValue = (EditText) findViewById(R.id.edit);
 
         sub = valueChanged().subscribe(new Action1<String>() {
@@ -77,17 +58,15 @@ public abstract class BaseElementForm<Validator extends NumberValidator> extends
         });
     }
 
-    public Validator getValidator() {
-        if (mValidator == null) {
-            throw new RuntimeException("Forms must set a validator"
-                                       + " before they are being accessed!");
-        }
-        return mValidator;
+    @Override
+    public void setValidator(Validator validator) {
+        super.setValidator(validator);
+        setFilters();
     }
 
-    public void setValidator(Validator validator) {
-        mValidator = validator;
-        setFilters();
+    @Override
+    protected int getLayout() {
+        return R.layout.number_form;
     }
 
     public void setInvalidInputListener(NumberValidator.InvalidInputListener listener) {
