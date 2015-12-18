@@ -16,23 +16,28 @@
 package gr.kokeroulis.sheetspinner;
 
 import android.content.Context;
+import android.content.ContextWrapper;
 import android.os.Bundle;
 import android.os.Parcelable;
+import android.support.v4.app.FragmentManager;
+import android.support.v7.app.AppCompatActivity;
 import android.util.AttributeSet;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 
-import com.flipboard.bottomsheet.BottomSheetLayout;
-
-import java.lang.ref.WeakReference;
 import java.util.List;
 
 public class SheetSpinner extends FrameLayout {
-    private List<String> mTitles;
-    private ListSheetView mSheetList;
     private TextView mTitle;
-    private WeakReference<BottomSheetLayout> mLayout;
+    private List<String> mEntries;
+    private SheetListListener mListListener;
+    private final View.OnClickListener mListener = new OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            show(getManager());
+        }
+    };
 
     public SheetSpinner(Context context) {
         this(context, null);
@@ -48,30 +53,6 @@ public class SheetSpinner extends FrameLayout {
         inflate(getContext(), R.layout.sheetspinner, this);
         mTitle = (TextView) findViewById(R.id.title);
         setSaveEnabled(true);
-    }
-
-    public void setTitles(List<String> titles,
-                          ListSheetView.OnSheetItemClickListener listener,
-                          WeakReference<BottomSheetLayout> layout) {
-        mTitles = titles;
-
-        if (mTitle.getText().toString().isEmpty()) {
-            mTitle.setText(titles.get(0));
-        }
-
-        ListSheetView.OnSelectionChangedListener selectionChangedListener = new ListSheetView.OnSelectionChangedListener() {
-            @Override
-            public void onSelectionChanged(String title) {
-                mTitle.setText(title);
-            }
-        };
-
-        mLayout = layout;
-        if (mSheetList == null && mTitles != null && mTitles.size() > 0) {
-            mSheetList = new ListSheetView(getContext(), mTitle.getText().toString(),
-                                           listener, layout, selectionChangedListener);
-            mSheetList.setTitles(titles);
-        }
     }
 
     @Override
@@ -94,44 +75,69 @@ public class SheetSpinner extends FrameLayout {
         super.onRestoreInstanceState(state);
     }
 
-    public void setEnabled(boolean enabled) {
-        if (mSheetList != null) {
-            mSheetList.setEnabled(enabled);
-        }
-    }
-
-    public boolean getEnabled() {
-        return mSheetList != null && mSheetList.getEnabled();
+    public void setEntries(List<String> entries) {
+        mEntries = entries;
+        mTitle.setText(entries.get(0));
     }
 
     public void setDefault(String title) {
-        if (mSheetList != null) {
-            mSheetList.setDefault(title);
-        }
-
         mTitle.setText(title);
     }
 
     public String getDefault() {
-        if (mSheetList != null) {
-            return mSheetList.getDefault();
-        } else if (mTitles != null) {
-            return mTitles.get(0);
+        return mTitle.getText().toString();
+    }
+
+    public void setOnListClickListener(SheetListListener listener) {
+        mListListener = listener;
+    }
+
+    @Override
+    public void setEnabled(boolean enabled) {
+        super.setEnabled(enabled);
+        if (!enabled) {
+            setOnClickListener(null);
         } else {
-            return "";
+            setOnClickListener(mListener);
+        }
+    }
+
+    private void show(FragmentManager manager) {
+        SheetFragment.Callback callback = new SheetFragment.Callback() {
+            @Override
+            void setTitle(String title) {
+                super.setTitle(title);
+                mTitle.setText(title);
+            }
+        };
+        callback.setTitle(mTitle.getText().toString());
+        SheetFragment fragment = SheetFragment.newInstance(mEntries, callback);
+        fragment.setOnListClickListener(mListListener);
+        fragment.show(manager);
+    }
+
+    private FragmentManager getManager() {
+        Context context = getContext();
+
+        while (true) {
+            while (context instanceof ContextWrapper) {
+                if (context instanceof AppCompatActivity) {
+                    return ((AppCompatActivity) context).getSupportFragmentManager();
+                } else {
+                    context = ((ContextWrapper)context).getBaseContext();
+                }
+            }
         }
     }
 
     @Override
     protected void onAttachedToWindow() {
         super.onAttachedToWindow();
-        setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (mLayout != null && mLayout.get() != null) {
-                    mLayout.get().showWithSheetView(mSheetList);
-                }
-            }
-        });
+
+        if (!isEnabled()) {
+            return;
+        }
+
+        setOnClickListener(mListener);
     }
 }
