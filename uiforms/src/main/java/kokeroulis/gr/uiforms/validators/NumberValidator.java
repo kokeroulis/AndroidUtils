@@ -43,7 +43,12 @@ public abstract class NumberValidator<T extends Comparable<T>>
         String number = dest.toString() + source;
         final T val = charToVal(number);
 
-        if (val.compareTo(charToVal("-1")) == ZERO) {
+        final int minValSize = mMinVal.toString().length();
+        // Always allow the first digit
+        if (dstart <= (minValSize -1)
+            && val.compareTo(charToVal("0")) != LOWER) {
+            return source;
+        } else if (val.compareTo(charToVal("-1")) == ZERO) {
             if (mListener != null) {
                 mListener.onInvalidInput(number, INVALID_INPUT);
             }
@@ -75,7 +80,9 @@ public abstract class NumberValidator<T extends Comparable<T>>
         if (getValue() == null) {
             return false;
         } else {
-            return getValue().compareTo(charToVal("0")) == BIGGER;
+            return getValue().compareTo(charToVal("0")) == BIGGER
+                && getValue().compareTo(mMinVal) == BIGGER
+                && getValue().compareTo(mMaxVal) == LOWER;
         }
     }
 }
