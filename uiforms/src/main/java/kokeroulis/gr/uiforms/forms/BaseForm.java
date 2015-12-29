@@ -50,6 +50,8 @@ public abstract class BaseForm<Validator> extends LinearLayout {
         setupUi();
     }
 
+    public abstract void restoreValue(Comparable value);
+
     public Validator getValidator() {
         if (mValidator == null) {
             throw new RuntimeException("Forms must set a validator"

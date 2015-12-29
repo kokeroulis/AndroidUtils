@@ -47,6 +47,11 @@ public class NumberForm<Validator extends NumberValidator> extends BaseForm<Vali
     }
 
     @Override
+    public void restoreValue(Comparable value) {
+        mEditValue.setText(value.toString());
+    }
+
+    @Override
     protected void setupUi() {
         mEditValue = (EditText) findViewById(R.id.edit);
 

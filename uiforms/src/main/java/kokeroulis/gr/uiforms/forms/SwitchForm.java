@@ -37,6 +37,12 @@ public class SwitchForm extends BaseForm<SwitchValidator> {
     }
 
     @Override
+    public void restoreValue(Comparable value) {
+        boolean isEnabled = value.toString().toLowerCase().equals("true");
+        mSwitch.setChecked(isEnabled);
+    }
+
+    @Override
     protected void setupUi() {
         mSwitch = (SwitchCompat) findViewById(R.id.edit);
         mSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
