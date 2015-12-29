@@ -38,6 +38,14 @@ public abstract class NumberValidator<T extends Comparable<T>>
         mMinVal = minVal;
     }
 
+    public T getMinVal() {
+        return mMinVal;
+    }
+
+    public T getMaxVal() {
+        return mMaxVal;
+    }
+
     @Override
     public CharSequence filter(CharSequence source, int start, int end, Spanned dest, int dstart, int dend) {
         String number = dest.toString() + source;
