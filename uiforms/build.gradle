@@ -33,4 +33,5 @@ dependencies {
     compile rootProject.ext.rxJava
     compile rootProject.ext.rxAndroid
     compile rootProject.ext.rxBindings
+    compile project(':sheetspinner')
 }
