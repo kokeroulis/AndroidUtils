@@ -13,6 +13,7 @@ package kokeroulis.gr.uiforms.validators;
     */
 
 public class IntegerValidator extends NumberValidator<Integer> {
+    private ValidatorDelegate<Integer> mDelegate;
 
     public IntegerValidator(Integer minVal, Integer maxVal) {
         super(minVal, maxVal);
@@ -25,5 +26,23 @@ public class IntegerValidator extends NumberValidator<Integer> {
         } catch (NumberFormatException e) {
             return -1;
         }
+    }
+
+    @Override
+    public Integer getValue() {
+        return getDelegate().getValue();
+    }
+
+    @Override
+    public void setValue(Integer value) {
+        getDelegate().setValue(value);
+    }
+
+    public ValidatorDelegate<Integer> getDelegate() {
+        if (mDelegate == null) {
+            mDelegate = ValidatorDelegate.create(this);
+        }
+
+        return mDelegate;
     }
 }

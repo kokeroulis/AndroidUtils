@@ -16,7 +16,7 @@ import android.text.InputFilter;
 import android.text.Spanned;
 
 public abstract class NumberValidator<T extends Comparable<T>>
-    extends Validator<T> implements InputFilter {
+    implements InputFilter,Validator<T>  {
 
     private final T mMaxVal;
     private final T mMinVal;

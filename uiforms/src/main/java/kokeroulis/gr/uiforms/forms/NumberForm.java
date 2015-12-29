@@ -94,7 +94,9 @@ public class NumberForm<Validator extends NumberValidator> extends BaseForm<Vali
     @Override
     protected void onDetachedFromWindow() {
         super.onDetachedFromWindow();
-        mValidator.clearListener();
+        if (mValidator != null) {
+            mValidator.clearListener();
+        }
         sub.unsubscribe();
     }
 }

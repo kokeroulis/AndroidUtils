@@ -12,10 +12,29 @@ package kokeroulis.gr.uiforms.validators;
     limitations under the License.
     */
 
-public class SwitchValidator extends Validator<Boolean> {
+public class SwitchValidator implements Validator<Boolean> {
+    private ValidatorDelegate<Boolean> mDelegate;
+
+    @Override
+    public Boolean getValue() {
+        return getDelegate().getValue();
+    }
+
+    @Override
+    public void setValue(Boolean value) {
+        getDelegate().setValue(value);
+    }
 
     @Override
     public boolean isValid() {
         return getValue() == null ? false : getValue();
+    }
+
+    public ValidatorDelegate<Boolean> getDelegate() {
+        if (mDelegate == null) {
+            mDelegate = ValidatorDelegate.create(this);
+        }
+
+        return mDelegate;
     }
 }

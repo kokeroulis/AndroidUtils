@@ -12,17 +12,11 @@ package kokeroulis.gr.uiforms.validators;
     limitations under the License.
     */
 
-public abstract class Validator<T extends Comparable> {
+public interface Validator<T extends Comparable> {
 
-    private T value;
+    T getValue();
 
-    public T getValue() {
-        return value;
-    }
+    void setValue(T value);
 
-    public void setValue(T value) {
-        this.value = value;
-    }
-
-    public abstract boolean isValid();
+    boolean isValid();
 }

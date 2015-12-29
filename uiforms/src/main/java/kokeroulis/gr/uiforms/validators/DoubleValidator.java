@@ -13,6 +13,7 @@ package kokeroulis.gr.uiforms.validators;
     */
 
 public class DoubleValidator extends NumberValidator<Double> {
+    private ValidatorDelegate<Double> mDelegate;
 
     public DoubleValidator(Double minVal, Double maxVal) {
         super(minVal, maxVal);
@@ -25,5 +26,23 @@ public class DoubleValidator extends NumberValidator<Double> {
         } catch (NumberFormatException e) {
             return -1.0;
         }
+    }
+
+    @Override
+    public Double getValue() {
+        return getDelegate().getValue();
+    }
+
+    @Override
+    public void setValue(Double value) {
+        getDelegate().setValue(value);
+    }
+
+    public ValidatorDelegate<Double> getDelegate() {
+        if (mDelegate == null) {
+            mDelegate = ValidatorDelegate.create(this);
+        }
+
+        return mDelegate;
     }
 }
