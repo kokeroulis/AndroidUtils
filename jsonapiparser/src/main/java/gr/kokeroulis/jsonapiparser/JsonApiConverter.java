@@ -15,7 +15,6 @@
  */
 package gr.kokeroulis.jsonapiparser;
 
-import com.google.gson.internal.LinkedHashTreeMap;
 import com.google.gson.reflect.TypeToken;
 import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi;
@@ -35,12 +34,9 @@ import java.util.Map;
 
 import retrofit.converter.ConversionException;
 import retrofit.converter.Converter;
-import retrofit.http.POST;
 import retrofit.mime.TypedInput;
 import retrofit.mime.TypedOutput;
 import rx.Observable;
-import rx.functions.Action1;
-import rx.functions.Func1;
 
 public class JsonApiConverter implements Converter {
 
@@ -202,15 +198,12 @@ public class JsonApiConverter implements Converter {
         Map<String, Object> attributes = new HashMap<>();
         Map<String, Object> relationships = new HashMap<>();
 
-        Observable.from(jsonMap.entrySet())
-            .filter(entry -> !entry.getKey().equals("type")
-                || !entry.getKey().equals("id"))
-            .subscribe(map -> attributes.put(map.getKey(), map.getValue()));
 
-        Observable.from(attributes.entrySet())
+        if (jsonMap.containsKey("id") && jsonMap.containsKey("type")) {
+            attributes.putAll(jsonMap);
+            Observable.from(attributes.entrySet())
                 .subscribe(map -> jsonMap.remove(map.getKey()));
 
-        if (attributes.containsKey("id") && attributes.containsKey("type")) {
             final String id = attributes.remove("id").toString();
             final String type = attributes.remove("type").toString();
             jsonMap.put("attributes", attributes);
@@ -231,6 +224,14 @@ public class JsonApiConverter implements Converter {
             listHelper.add(jsonMap);
             data.put("data", listHelper);
         } else {
+            Observable.from(jsonMap.entrySet())
+                .filter(entry -> !entry.getKey().equals("type")
+                    && !entry.getKey().equals("id"))
+                .subscribe(map -> attributes.put(map.getKey(), map.getValue()));
+
+            Observable.from(attributes.entrySet())
+                .subscribe(map -> jsonMap.remove(map.getKey()));
+
             jsonMap.put("attributes", attributes);
             data.put("data", jsonMap);
         }
