@@ -15,6 +15,7 @@
  */
 package gr.kokeroulis.jsonapiparser;
 
+import com.google.gson.internal.LinkedHashTreeMap;
 import com.google.gson.reflect.TypeToken;
 import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi;
@@ -34,9 +35,12 @@ import java.util.Map;
 
 import retrofit.converter.ConversionException;
 import retrofit.converter.Converter;
+import retrofit.http.POST;
 import retrofit.mime.TypedInput;
 import retrofit.mime.TypedOutput;
 import rx.Observable;
+import rx.functions.Action1;
+import rx.functions.Func1;
 
 public class JsonApiConverter implements Converter {
 
@@ -179,7 +183,7 @@ public class JsonApiConverter implements Converter {
         // when it has only 1 item!
         String listTypeToString = TypeToken.get(type).getRawType().toString();
         boolean isInstanceOfList = listTypeToString.equals("interface java.util.List");
-        if(data.size() == 1 && !isInstanceOfList) {
+        if (data.size() == 1 && !isInstanceOfList) {
             if (data.get(0) == null) {
                 return json;
             } else {
@@ -196,16 +200,40 @@ public class JsonApiConverter implements Converter {
         Map<String,Object> jsonMap = objectToMap(json);
         Map<String,Object> data = new HashMap<>();
         Map<String, Object> attributes = new HashMap<>();
+        Map<String, Object> relationships = new HashMap<>();
 
         Observable.from(jsonMap.entrySet())
-                .filter(stringObjectEntry -> !stringObjectEntry.getKey().equals("type"))
-                .subscribe(map -> attributes.put(map.getKey(), map.getValue()));
+            .filter(entry -> !entry.getKey().equals("type")
+                || !entry.getKey().equals("id"))
+            .subscribe(map -> attributes.put(map.getKey(), map.getValue()));
 
         Observable.from(attributes.entrySet())
                 .subscribe(map -> jsonMap.remove(map.getKey()));
 
-        jsonMap.put("attributes", attributes);
-        data.put("data", jsonMap);
+        if (attributes.containsKey("id") && attributes.containsKey("type")) {
+            final String id = attributes.remove("id").toString();
+            final String type = attributes.remove("type").toString();
+            jsonMap.put("attributes", attributes);
+
+            Map<String, Object> helper = new HashMap<>();
+            Map<String, Object> dataRel = new HashMap<>();
+            Map<String, Object> typeRel = new HashMap<>();
+
+            helper.put("id", id);
+            helper.put("type", type);
+
+            dataRel.put("data", helper);
+            typeRel.put(type, dataRel);
+            relationships.put("relationships", typeRel);
+
+            jsonMap.putAll(relationships);
+            List<Map<String, Object>> listHelper = new ArrayList<>();
+            listHelper.add(jsonMap);
+            data.put("data", listHelper);
+        } else {
+            jsonMap.put("attributes", attributes);
+            data.put("data", jsonMap);
+        }
 
         return mMoshi.adapter(Object.class).toJson(data);
     }

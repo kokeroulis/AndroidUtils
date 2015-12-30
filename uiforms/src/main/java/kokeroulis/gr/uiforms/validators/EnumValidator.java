@@ -27,7 +27,7 @@ public class EnumValidator implements Validator<String> {
 
     @Override
     public boolean isValid() {
-        return getValue() != null && getValue().isEmpty();
+        return getValue() != null && !getValue().isEmpty();
     }
 
     public ValidatorDelegate<String> getDelegate() {
