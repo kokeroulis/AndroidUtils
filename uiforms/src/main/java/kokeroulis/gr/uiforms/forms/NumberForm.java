@@ -104,4 +104,11 @@ public class NumberForm<Validator extends NumberValidator> extends BaseForm<Vali
         }
         sub.unsubscribe();
     }
+
+    @Override
+    public void setPlaceHolder(String text) {
+        if (mEditValue != null) {
+            mEditValue.setHint(text);
+        }
+    }
 }

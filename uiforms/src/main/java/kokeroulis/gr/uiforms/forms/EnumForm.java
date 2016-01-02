@@ -63,4 +63,9 @@ public class EnumForm extends BaseForm<EnumValidator> {
     protected int getLayout() {
         return R.layout.sheet_spinner;
     }
+
+    @Override
+    public void setPlaceHolder(String text) {
+        // no op here!
+    }
 }

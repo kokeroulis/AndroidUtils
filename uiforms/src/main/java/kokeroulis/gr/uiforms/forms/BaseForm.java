@@ -67,4 +67,6 @@ public abstract class BaseForm<Validator> extends LinearLayout {
     protected abstract void setupUi();
 
     protected abstract int getLayout();
+
+    public abstract void setPlaceHolder(final String text);
 }

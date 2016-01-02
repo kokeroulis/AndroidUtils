@@ -57,4 +57,9 @@ public class SwitchForm extends BaseForm<SwitchValidator> {
     protected int getLayout() {
         return R.layout.switch_form;
     }
+
+    @Override
+    public void setPlaceHolder(String text) {
+        // no op here
+    }
 }
