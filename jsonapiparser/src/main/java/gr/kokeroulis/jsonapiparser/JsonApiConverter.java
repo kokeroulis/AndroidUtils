@@ -207,22 +207,28 @@ public class JsonApiConverter implements Converter {
             final String id = attributes.remove("id").toString();
             final String type = attributes.remove("type").toString();
             jsonMap.put("attributes", attributes);
+            jsonMap.put("type", type);
 
             Map<String, Object> helper = new HashMap<>();
             Map<String, Object> dataRel = new HashMap<>();
             Map<String, Object> typeRel = new HashMap<>();
 
             helper.put("id", id);
-            helper.put("type", type);
+            helper.put("type", type + "_template");
 
             dataRel.put("data", helper);
-            typeRel.put(type, dataRel);
+            typeRel.put(type + "_template", dataRel);
             relationships.put("relationships", typeRel);
 
             jsonMap.putAll(relationships);
-            List<Map<String, Object>> listHelper = new ArrayList<>();
-            listHelper.add(jsonMap);
-            data.put("data", listHelper);
+
+            if (attributes.get("value") instanceof Map) {
+                data.put("data", jsonMap);
+            } else {
+                List<Map<String, Object>> listHelper = new ArrayList<>();
+                listHelper.add(jsonMap);
+                data.put("data", listHelper);
+            }
         } else {
             Observable.from(jsonMap.entrySet())
                 .filter(entry -> !entry.getKey().equals("type")
