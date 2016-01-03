@@ -66,6 +66,6 @@ public class EnumForm extends BaseForm<EnumValidator> {
 
     @Override
     public void setPlaceHolder(String text) {
-        // no op here!
+        mSheetSpinner.setDefault(text);
     }
 }
