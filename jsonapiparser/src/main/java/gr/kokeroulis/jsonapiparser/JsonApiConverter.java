@@ -80,7 +80,13 @@ public class JsonApiConverter implements Converter {
                 }
             }
 
-            String json = toJsonApi(object);
+            final String json;
+            if (!object.getClass().isAnnotationPresent(JsonRaw.class)) {
+                json = toJsonApi(object);
+            } else {
+                json = mMoshi.adapter(Object.class).toJson(object);
+            }
+
             return new JsonTypedOutput(json);
         } catch (Exception e) {
             throw new AssertionError(e);
