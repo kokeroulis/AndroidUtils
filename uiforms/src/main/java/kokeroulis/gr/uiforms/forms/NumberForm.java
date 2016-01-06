@@ -15,6 +15,7 @@ package kokeroulis.gr.uiforms.forms;
 import android.content.Context;
 import android.text.InputFilter;
 import android.util.AttributeSet;
+import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
 
 import com.jakewharton.rxbinding.widget.RxTextView;
@@ -80,6 +81,7 @@ public class NumberForm<Validator extends NumberValidator> extends BaseForm<Vali
 
     protected void setFilters() {
         mEditValue.setFilters(new InputFilter[]{mValidator});
+        mEditValue.setInputType(EditorInfo.TYPE_CLASS_NUMBER);
     }
 
     protected Observable<String> valueChanged() {
