@@ -14,26 +14,18 @@ package kokeroulis.gr.uiforms.forms;
 
 import android.content.Context;
 import android.text.InputFilter;
+import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
 
-import com.jakewharton.rxbinding.widget.RxTextView;
-
-import java.util.concurrent.TimeUnit;
-
 import kokeroulis.gr.uiforms.R;
 import kokeroulis.gr.uiforms.validators.NumberValidator;
-import rx.Observable;
-import rx.Subscription;
-import rx.android.schedulers.AndroidSchedulers;
-import rx.functions.Action1;
-import rx.functions.Func1;
 
 public class NumberForm<Validator extends NumberValidator> extends BaseForm<Validator> {
 
     private EditText mEditValue;
-    private Subscription sub;
+    private TextChanged mTextChanged;
 
     public NumberForm(Context context) {
         super(context);
@@ -55,13 +47,15 @@ public class NumberForm<Validator extends NumberValidator> extends BaseForm<Vali
     @Override
     protected void setupUi() {
         mEditValue = (EditText) findViewById(R.id.edit);
-
-        sub = valueChanged().subscribe(new Action1<String>() {
+        mTextChanged = new TextChanged() {
             @Override
-            public void call(String text) {
-                mValidator.setValue(mValidator.charToVal(text));
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if (!TextUtils.isEmpty(s)) {
+                    mValidator.setValue(mValidator.charToVal(s.toString()));
+                }
             }
-        });
+        };
+        mEditValue.addTextChangedListener(mTextChanged);
     }
 
     @Override
@@ -84,27 +78,13 @@ public class NumberForm<Validator extends NumberValidator> extends BaseForm<Vali
         mEditValue.setInputType(EditorInfo.TYPE_CLASS_NUMBER);
     }
 
-    protected Observable<String> valueChanged() {
-        return RxTextView
-            .textChanges(mEditValue)
-            .skip(1) // First event is a blank string "".
-            .debounce(400, TimeUnit.MILLISECONDS) //
-            .observeOn(AndroidSchedulers.mainThread())
-            .map(new Func1<CharSequence, String>() {
-                @Override
-                public String call(CharSequence text) {
-                    return text.toString();
-                }
-            });
-    }
-
     @Override
     protected void onDetachedFromWindow() {
         super.onDetachedFromWindow();
         if (mValidator != null) {
             mValidator.clearListener();
         }
-        sub.unsubscribe();
+        mTextChanged = null;
     }
 
     @Override
