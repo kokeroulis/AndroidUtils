@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -81,7 +82,8 @@ public class JsonApiConverter implements Converter {
             }
 
             final String json;
-            if (!object.getClass().isAnnotationPresent(JsonRaw.class)) {
+            final Annotation jsonRaw = object.getClass().getAnnotation(JsonRaw.class);
+            if (jsonRaw == null) {
                 json = toJsonApi(object);
             } else {
                 json = mMoshi.adapter(Object.class).toJson(object);
