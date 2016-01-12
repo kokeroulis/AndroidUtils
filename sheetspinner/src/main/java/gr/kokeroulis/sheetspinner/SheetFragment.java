@@ -26,19 +26,20 @@ class SheetFragment extends BottomSheetFragment {
     private SheetListListener mListener;
     private Callback mCallback;
 
-    public static SheetFragment newInstance(String[] entries, Callback callback) {
+    public static SheetFragment newInstance(String[] entries, int layout, Callback callback) {
         SheetFragment f = new SheetFragment();
         Bundle args = new Bundle();
         args.putStringArray("items", entries);
+        args.putInt("layout", layout);
         f.setArguments(args);
         f.setCallBack(callback);
         return f;
     }
 
-    public static SheetFragment newInstance(List<String> entries, Callback callback) {
+    public static SheetFragment newInstance(List<String> entries, int layout, Callback callback) {
         String[] array = new String[entries.size()];
         entries.toArray(array);
-        return newInstance(array, callback);
+        return newInstance(array, layout, callback);
     }
 
     @Nullable
@@ -73,7 +74,12 @@ class SheetFragment extends BottomSheetFragment {
     }
 
     public void show(FragmentManager manager) {
-        show(manager, R.id.bottomSheetLayout);
+        int layout = getArguments().getInt("layout");
+        if (layout <= 0) {
+            show(manager, R.id.bottomSheetLayout);
+        } else {
+            show(manager, layout);
+        }
     }
 
     static abstract class Callback {

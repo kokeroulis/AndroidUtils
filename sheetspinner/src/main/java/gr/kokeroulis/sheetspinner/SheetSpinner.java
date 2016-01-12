@@ -32,6 +32,7 @@ public class SheetSpinner extends FrameLayout {
     private TextView mTitle;
     private List<String> mEntries;
     private SheetListListener mListListener;
+    private int mBottomSheetLayoutId = 0;
     private final View.OnClickListener mListener = new OnClickListener() {
         @Override
         public void onClick(View v) {
@@ -102,6 +103,10 @@ public class SheetSpinner extends FrameLayout {
         }
     }
 
+    public void setBottomSheetLayoutId(int bottomSheetLayoutId) {
+        mBottomSheetLayoutId = bottomSheetLayoutId;
+    }
+
     private void show(FragmentManager manager) {
         SheetFragment.Callback callback = new SheetFragment.Callback() {
             @Override
@@ -111,7 +116,7 @@ public class SheetSpinner extends FrameLayout {
             }
         };
         callback.setTitle(mTitle.getText().toString());
-        SheetFragment fragment = SheetFragment.newInstance(mEntries, callback);
+        SheetFragment fragment = SheetFragment.newInstance(mEntries, mBottomSheetLayoutId, callback);
         fragment.setOnListClickListener(mListListener);
         fragment.show(manager);
     }
