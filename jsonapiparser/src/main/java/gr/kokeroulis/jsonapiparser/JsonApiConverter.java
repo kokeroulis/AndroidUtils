@@ -27,6 +27,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -169,6 +171,11 @@ public class JsonApiConverter implements Converter {
                                                 && included.get("id").equals(link.get("id")))
                                         .last()
                                         .subscribe(included -> {
+                                            Class<?> objectClass = (Class<?>) type;
+                                            Object relExtra = getExtraRelationship(objectClass, included);
+                                            if (relExtra != null) {
+                                                link.put("relExtra", relExtra);
+                                            }
                                             link.putAll((Map<String, Object>) included.get(ATTRIBUTES_KEY));
                                         }, error -> {
                                             // catch exception. We need this one!
@@ -198,6 +205,27 @@ public class JsonApiConverter implements Converter {
         }
 
         return formatted;
+    }
+
+    private Object getExtraRelationship(Class<?> objectClass, Map<String, Object> json) {
+        Annotation relAnnotation = objectClass.getAnnotation(RelationshipRaw.class);
+        if (relAnnotation == null) {
+            return null;
+        }
+
+        for (Method method : objectClass.getDeclaredMethods()) {
+            Annotation hasAnotation = method.getAnnotation(RelationshipRawThis.class);
+            if (hasAnotation != null && Modifier.isStatic(method.getModifiers())) {
+                try {
+                    return method.invoke(null, json);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        throw new RuntimeException(toString() + " class is annotated with RelationshipRaw"
+        + " but there is no static method annotated with RelationshipRawThis!");
     }
 
     private String toJsonApi(Object json) throws Exception {
