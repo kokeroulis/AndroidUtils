@@ -171,10 +171,14 @@ public class JsonApiConverter implements Converter {
                                                 && included.get("id").equals(link.get("id")))
                                         .last()
                                         .subscribe(included -> {
-                                            Class<?> objectClass = (Class<?>) type;
-                                            Object relExtra = getExtraRelationship(objectClass, included);
-                                            if (relExtra != null) {
-                                                link.put("relExtra", relExtra);
+                                            try {
+                                                Class<?> objectClass = (Class<?>) type;
+                                                Object relExtra = getExtraRelationship(objectClass, included);
+                                                if (relExtra != null) {
+                                                    link.put("relExtra", relExtra);
+                                                }
+                                            } catch (ClassCastException e) {
+                                                // do nothing, let it parse the rest of the data.
                                             }
                                             link.putAll((Map<String, Object>) included.get(ATTRIBUTES_KEY));
                                         }, error -> {
