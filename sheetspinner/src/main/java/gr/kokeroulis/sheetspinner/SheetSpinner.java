@@ -15,6 +15,7 @@
  */
 package gr.kokeroulis.sheetspinner;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.ContextWrapper;
 import android.os.Bundle;
@@ -23,6 +24,7 @@ import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
 import android.util.AttributeSet;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 
@@ -118,7 +120,15 @@ public class SheetSpinner extends FrameLayout {
         callback.setTitle(mTitle.getText().toString());
         SheetFragment fragment = SheetFragment.newInstance(mEntries, mBottomSheetLayoutId, callback);
         fragment.setOnListClickListener(mListListener);
+        hideKeyboardFrom(getContext(), this);
         fragment.show(manager);
+    }
+
+    private static void hideKeyboardFrom(Context context, View view) {
+        InputMethodManager imm = (InputMethodManager) context.getSystemService(Activity.INPUT_METHOD_SERVICE);
+        if (imm != null && view != null) {
+            imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+        }
     }
 
     private FragmentManager getManager() {
