@@ -64,7 +64,7 @@ public final class NotificationInterceptor {
     }
 
     public static void unBind(Activity target) {
-        bind((Context) target);
+        unBind((Context) target);
     }
 
     public static void unBind(Context target) {
@@ -74,6 +74,8 @@ public final class NotificationInterceptor {
         if (receiver != null) {
             LocalBroadcastManager manager = LocalBroadcastManager.getInstance(target);
             manager.unregisterReceiver(receiver.receiver);
+            // TODO Find a way to cache it without creating a memory leak.
+            sCached.remove(targetClass);
         }
     }
 
