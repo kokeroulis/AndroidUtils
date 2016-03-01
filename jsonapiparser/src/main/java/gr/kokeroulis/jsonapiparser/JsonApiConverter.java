@@ -186,7 +186,6 @@ public class JsonApiConverter implements Converter {
                                             // look at the comments of JsonApiResponse
                                         }));
                             });
-                    stringObjectMap.remove(RELATIONSHIP_KEY);
                 })
                 .subscribe(datum -> data.add(datum));
 
