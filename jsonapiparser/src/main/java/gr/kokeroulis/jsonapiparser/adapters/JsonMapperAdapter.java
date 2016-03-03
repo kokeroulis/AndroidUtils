@@ -50,8 +50,14 @@ public class JsonMapperAdapter {
                 .flatMap(relModel -> Observable.from(json.included)
                     .filter(f -> {
                         RelationshipsModel rel = relModel.getValue();
-                        TypeIDMapper type = rel.data.get(0);
-                        return type.id.equals(f.id) && type.type.equals(f.type);
+                        boolean result = false;
+                        for (TypeIDMapper type : rel.data) {
+                            result = type.id.equals(f.id) && type.type.equals(f.type);
+                            if (result) {
+                                return true;
+                            }
+                        }
+                        return result;
                     })
                     .filter(included -> included != null && included.attributes != null)
                     .doOnNext(included -> included.attributes.put("id", included.id))
@@ -59,14 +65,19 @@ public class JsonMapperAdapter {
                     .doOnNext(attrs -> {
                         Map<String, Object> helper = new LinkedHashMap<>();
                         helper.put(relModel.getKey(), attrs);
-                        helper.put("id", d.id);
-                        d.attributes.putAll(helper);
+                        helper.putAll(d.attributes);
+                        helper.put("id", attrs.get("id"));
+                        mapper.formatedData.add(helper);
                     })))
         .subscribe();
 
+
+        if (mapper.formatedData.size() == 0) {
         Observable.from(json.data)
             .doOnNext(d -> mapper.formatedData.add(d.attributes))
             .subscribe();
+        }
+
         return mapper;
     }
 }
