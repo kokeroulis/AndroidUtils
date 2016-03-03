@@ -91,6 +91,9 @@ public class JsonMapperAdapter {
                 && included.get("id").equals(relData.get("id")))
             .map(included -> {
                 relData.putAll(castObjectToMap(included.get("attributes")));
+                if (included.containsKey("relationships")) {
+                    relData.putAll(castObjectToMap(included.get("relationships")));
+                }
                 return relData;
             });
     }
