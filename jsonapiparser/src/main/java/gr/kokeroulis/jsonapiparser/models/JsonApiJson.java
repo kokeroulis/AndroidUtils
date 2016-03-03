@@ -16,8 +16,9 @@
 package gr.kokeroulis.jsonapiparser.models;
 
 import java.util.List;
+import java.util.Map;
 
 public class JsonApiJson {
-    public List<DataMapper> data;
-    public List<IncludedMapper> included;
+    public List<Map<String, Object>> data;
+    public List<Map<String, Object>> included;
 }

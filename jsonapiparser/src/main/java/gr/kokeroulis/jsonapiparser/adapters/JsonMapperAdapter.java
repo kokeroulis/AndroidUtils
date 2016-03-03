@@ -18,13 +18,11 @@ package gr.kokeroulis.jsonapiparser.adapters;
 import com.squareup.moshi.FromJson;
 
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import gr.kokeroulis.jsonapiparser.models.JsonApiJson;
 import gr.kokeroulis.jsonapiparser.models.JsonMapper;
-import gr.kokeroulis.jsonapiparser.models.RelationshipsModel;
-import gr.kokeroulis.jsonapiparser.models.TypeIDMapper;
 import rx.Observable;
 
 public class JsonMapperAdapter {
@@ -33,51 +31,67 @@ public class JsonMapperAdapter {
     JsonMapper fromJson(JsonApiJson json) {
         JsonMapper mapper = new JsonMapper();
         mapper.formatedData = new ArrayList<>();
-        Observable.from(json.data)
-            .filter(d -> d.relationships != null)
-            .flatMap(d -> Observable.from(d.relationships.entrySet())
-                .filter(entry -> entry.getValue().data != null)
-                .filter(entry -> {
-                    RelationshipsModel rel = entry.getValue();
-                    if (rel.data.size() > 0) {
-                        TypeIDMapper type = rel.data.get(0);
-                        return type.id != null && type.type != null;
-                    } else {
-                        return false;
-                    }
-                })
-                .filter(rel -> json.included != null )
-                .flatMap(relModel -> Observable.from(json.included)
-                    .filter(f -> {
-                        RelationshipsModel rel = relModel.getValue();
-                        boolean result = false;
-                        for (TypeIDMapper type : rel.data) {
-                            result = type.id.equals(f.id) && type.type.equals(f.type);
-                            if (result) {
-                                return true;
-                            }
-                        }
-                        return result;
-                    })
-                    .filter(included -> included != null && included.attributes != null)
-                    .doOnNext(included -> included.attributes.put("id", included.id))
-                    .map(included-> included.attributes)
-                    .doOnNext(attrs -> {
-                        Map<String, Object> helper = new LinkedHashMap<>();
-                        helper.put(relModel.getKey(), attrs);
-                        helper.putAll(d.attributes);
-                        helper.put("id", attrs.get("id"));
-                        mapper.formatedData.add(helper);
-                    })))
-        .subscribe();
 
-
-        if (mapper.formatedData.size() == 0) {
         Observable.from(json.data)
-            .doOnNext(d -> mapper.formatedData.add(d.attributes))
-            .subscribe();
-        }
+            .doOnNext(dataMapper -> {
+                Object attrs = dataMapper.get("attributes");
+                dataMapper.putAll(castObjectToMap(attrs));
+                dataMapper.remove("attributes");
+
+                if (!dataMapper.containsKey("relationships")) {
+                    return;
+                }
+                Observable
+                    .just(dataMapper.get("relationships"))
+                    .map(JsonMapperAdapter::castObjectToMap)
+                    .flatMap(relationship -> Observable.from(relationship.entrySet()))
+                    .doOnNext(stringObjectEntry -> {
+                        Observable.just(stringObjectEntry)
+                            .map(relEntry -> relEntry.getValue())
+                            .map(JsonMapperAdapter::castObjectToMap)
+                            .map(entryData -> entryData.get("data"))
+                            .filter(relData -> relData != null && json.included != null)
+                            .flatMap(relData -> {
+                                if (relData instanceof List) {
+                                    return Observable.from((List<Map<String, Object>>) relData)
+                                        .flatMap(currentRelData ->
+                                            getIncludedFromRel(json, currentRelData))
+                                        .toList();
+
+                                } else {
+                                    return Observable.just((Map<String, Object>) relData)
+                                        .flatMap(currentRelData ->
+                                            getIncludedFromRel(json, currentRelData));
+                                }
+                            })
+                            .subscribe(o -> {
+                                dataMapper.put(stringObjectEntry.getKey(), o);
+                            });
+
+                    }).subscribe();
+            }).subscribe(stringObjectMap -> {
+                mapper.formatedData.add(stringObjectMap);
+            });
+
 
         return mapper;
+    }
+
+    private static Map<String, Object> castObjectToMap(Object obj) {
+        if (!(obj instanceof Map)) {
+            throw new IllegalArgumentException(" Object is not instance of map.");
+        }
+
+        return (Map<String, Object>) obj;
+    }
+
+    private static Observable<Map<String, Object>> getIncludedFromRel(JsonApiJson json, Map<String, Object> relData) {
+        return Observable.from(json.included)
+            .filter(included -> included.get("type").equals(relData.get("type"))
+                && included.get("id").equals(relData.get("id")))
+            .map(included -> {
+                relData.putAll(castObjectToMap(included.get("attributes")));
+                return relData;
+            });
     }
 }
