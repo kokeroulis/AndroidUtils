@@ -3,7 +3,7 @@ import com.squareup.moshi.Moshi;
 
 import org.testng.annotations.Test;
 
-import gr.kokeroulis.jsonapiparser.JsonMapperAdapter;
+import gr.kokeroulis.jsonapiparser.adapters.JsonMapperAdapter;
 import gr.kokeroulis.jsonapiparser.models.JsonMapper;
 
 /**

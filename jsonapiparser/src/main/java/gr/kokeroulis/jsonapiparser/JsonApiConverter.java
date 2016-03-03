@@ -15,7 +15,6 @@
  */
 package gr.kokeroulis.jsonapiparser;
 
-import com.google.gson.reflect.TypeToken;
 import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi;
 import com.squareup.moshi.Types;
@@ -43,9 +42,6 @@ import retrofit.mime.TypedOutput;
 import rx.Observable;
 
 public class JsonApiConverter implements Converter {
-
-    private static String RELATIONSHIP_KEY = "relationships";
-    private static String ATTRIBUTES_KEY = "attributes";
     private Moshi mMoshi;
 
     public JsonApiConverter(Moshi moshi) {
@@ -129,109 +125,6 @@ public class JsonApiConverter implements Converter {
         return out.toString();
     }
 
-    private static final String test = "{\n" +
-        "  \"links\": {\n" +
-        "    \"self\": \"https://api.vivantehealth.com/dev/message/\"\n" +
-        "  },\n" +
-        "  \"data\": [\n" +
-        "    {\n" +
-        "      \"type\": \"message\",\n" +
-        "      \"id\": \"2329\",\n" +
-        "      \"attributes\": {\n" +
-        "        \"body\": \"Message single this\",\n" +
-        "        \"subject\": \"My Question\",\n" +
-        "        \"type\": \"USER_MESSAGE\",\n" +
-        "        \"state\": \"NEW\",\n" +
-        "        \"created\": 1456855398,\n" +
-        "        \"read_timestamp\": 1456855574,\n" +
-        "        \"method\": \"WEB\",\n" +
-        "        \"route_id\": \"2330\"\n" +
-        "      },\n" +
-        "      \"relationships\": {\n" +
-        "        \"sender\": {\n" +
-        "          \"links\": {\n" +
-        "            \"self\": \"https://api.vivantehealth.com/dev/message/2329/relationships/sender\",\n" +
-        "            \"related\": \"https://api.vivantehealth.com/dev/message/2329/sender\"\n" +
-        "          },\n" +
-        "          \"data\": {\n" +
-        "            \"type\": \"user\",\n" +
-        "            \"id\": \"7\"\n" +
-        "          }\n" +
-        "        },\n" +
-        "        \"receiver\": {\n" +
-        "          \"links\": {\n" +
-        "            \"self\": \"https://api.vivantehealth.com/dev/message/2329/relationships/receiver\",\n" +
-        "            \"related\": \"https://api.vivantehealth.com/dev/message/2329/receiver\"\n" +
-        "          },\n" +
-        "          \"data\": {\n" +
-        "            \"type\": \"user\",\n" +
-        "            \"id\": \"7643\"\n" +
-        "          }\n" +
-        "        },\n" +
-        "        \"reply\": {\n" +
-        "          \"links\": {\n" +
-        "            \"self\": \"https://api.vivantehealth.com/dev/message/2329/relationships/reply\",\n" +
-        "            \"related\": \"https://api.vivantehealth.com/dev/message/2329/reply\"\n" +
-        "          }\n" +
-        "        },\n" +
-        "        \"answer\": {\n" +
-        "          \"links\": {\n" +
-        "            \"self\": \"https://api.vivantehealth.com/dev/message/2329/relationships/answer\",\n" +
-        "            \"related\": \"https://api.vivantehealth.com/dev/message/2329/answer\"\n" +
-        "          },\n" +
-        "          \"data\": []\n" +
-        "        },\n" +
-        "        \"user_data_template\": {\n" +
-        "          \"links\": {\n" +
-        "            \"self\": \"https://api.vivantehealth.com/dev/message/2329/relationships/user_data_template\",\n" +
-        "            \"related\": \"https://api.vivantehealth.com/dev/message/2329/user_data_template\"\n" +
-        "          }\n" +
-        "        }\n" +
-        "      },\n" +
-        "      \"links\": {\n" +
-        "        \"self\": \"https://api.vivantehealth.com/dev/message/2329\"\n" +
-        "      }\n" +
-        "    }\n" +
-        "  ],\n" +
-        "  \"included\": [\n" +
-        "    {\n" +
-        "      \"type\": \"user\",\n" +
-        "      \"id\": \"7\",\n" +
-        "      \"attributes\": {\n" +
-        "        \"created\": 1456056166,\n" +
-        "        \"email\": \"nohponex+coach@gmail.com\",\n" +
-        "        \"first_name\": \"Xenofon\",\n" +
-        "        \"last_name\": \"Coach\",\n" +
-        "        \"user_type\": \"COACH\",\n" +
-        "        \"birth_date\": \"1991-08-23\",\n" +
-        "        \"phone_mobile\": \"1235435435434\",\n" +
-        "        \"avatar\": \"https://www.gravatar.com/avatar/2ce8ab698d5f008d98e4d01c85482ab1\"\n" +
-        "      },\n" +
-        "      \"relationships\": {\n" +
-        "        \"condition\": {\n" +
-        "          \"links\": {\n" +
-        "            \"self\": \"https://api.vivantehealth.com/dev/user/7/relationships/condition\",\n" +
-        "            \"related\": \"https://api.vivantehealth.com/dev/user/7/condition\"\n" +
-        "          }\n" +
-        "        }\n" +
-        "      },\n" +
-        "      \"links\": {\n" +
-        "        \"self\": \"https://api.vivantehealth.com/dev/user/7\"\n" +
-        "      }\n" +
-        "    }\n" +
-        "  ],\n" +
-        "  \"meta\": {\n" +
-        "    \"page\": {\n" +
-        "      \"offset\": 0,\n" +
-        "      \"limit\": 10\n" +
-        "    },\n" +
-        "    \"request_id\": \"320bfb45-6976-4603-b3db-fda68f556bd3\"\n" +
-        "  },\n" +
-        "  \"jsonapi\": {\n" +
-        "    \"version\": \"1.0\"\n" +
-        "  }\n" +
-        "}";
-
     private String fromJsonApi(String json, Type type) throws IOException {
         Map<String, Object> responseHash;
         try {
@@ -246,76 +139,20 @@ public class JsonApiConverter implements Converter {
             return json;
         }
 
-        //JsonAdapter<JsonApiResponse> adapter = mMoshi.adapter(JsonApiResponse.class);
-        //JsonApiResponse response = adapter.fromJson(json);
-
         JsonAdapter<JsonMapper> adapter = mMoshi.adapter(JsonMapper.class);
         JsonMapper response = adapter.fromJson(json);
-       /* List<Map<String, Object>> data = new ArrayList<>();
 
-        response.data()
-                .doOnNext(stringObjectMap -> {
-                    stringObjectMap.putAll((Map<String, Object>) stringObjectMap.get(ATTRIBUTES_KEY));
-                    stringObjectMap.remove(ATTRIBUTES_KEY);
+        Type mapListType = Types.newParameterizedType(List.class, Map.class, String.class, Object.class);
+        JsonAdapter<List<Map<String, Object>>> dataMapListAdapter = mMoshi.adapter(mapListType);
 
-                    // We don't need to parse Authentication object!
-                    if (stringObjectMap.get(RELATIONSHIP_KEY) == null) {
-                        return;
-                    }
-                    Observable.from(((Map<String, Object>) stringObjectMap.get(RELATIONSHIP_KEY)).keySet())
-                        .filter(key -> ((Map<String, Object>) stringObjectMap.get(RELATIONSHIP_KEY)).get(key) instanceof Map || ((Map<String, Object>) stringObjectMap.get(RELATIONSHIP_KEY)).get(key) instanceof List)
-                            .subscribe(key -> {
-                                stringObjectMap.put(key, ((Map<String, Object>) ((Map<String, Object>) stringObjectMap.get(RELATIONSHIP_KEY)).get(key)).get("data"));
+        Type mapType = Types.newParameterizedType(Map.class, String.class, Object.class);
+        JsonAdapter<Map<String, Object>> dataMapAdapter = mMoshi.adapter(mapType);
 
-                                Observable<Map<String, Object>> inner;
-                                Object includedLinks = stringObjectMap.get(key);
-
-                                if (includedLinks instanceof List) inner = Observable.from((List<Map<String, Object>>) includedLinks);
-                                else inner = Observable.just((Map<String, Object>) includedLinks);
-
-                                inner.forEach(link -> response.included()
-                                        .filter(included -> included.get("type").equals(link.get("type"))
-                                                && included.get("id").equals(link.get("id")))
-                                        .last()
-                                        .subscribe(included -> {
-                                            try {
-                                                Class<?> objectClass = (Class<?>) type;
-                                                Object relExtra = getExtraRelationship(objectClass, included);
-                                                if (relExtra != null) {
-                                                    link.put("relExtra", relExtra);
-                                                }
-                                            } catch (ClassCastException e) {
-                                                // do nothing, let it parse the rest of the data.
-                                            }
-                                            link.putAll((Map<String, Object>) included.get(ATTRIBUTES_KEY));
-                                        }, error -> {
-                                            // catch exception. We need this one!
-                                            // look at the comments of JsonApiResponse
-                                        }));
-                            });
-                })
-                .subscribe(datum -> data.add(datum));
-
-        String formatted;
-
-        // List must preserve their structure when they
-        // are a single item.
-        // TL;DR don't convert the list into to a string
-        // when it has only 1 item!
-        String listTypeToString = TypeToken.get(type).getRawType().toString();
-        boolean isInstanceOfList = listTypeToString.equals("interface java.util.List");
-        if (data.size() == 1 && !isInstanceOfList) {
-            if (data.get(0) == null) {
-                return json;
-            } else {
-                formatted = mMoshi.adapter(Object.class).toJson(data.get(0));
-            }
+        if (!List.class.isAssignableFrom(Types.getRawType(type))) { // its object
+            return dataMapAdapter.toJson(response.formatedData.get(0));
         } else {
-            formatted =  mMoshi.adapter(Object.class).toJson(data);
+            return dataMapListAdapter.toJson(response.formatedData);
         }
-
-        return formatted;*/
-        return "";
     }
 
     private Object getExtraRelationship(Class<?> objectClass, Map<String, Object> json) {
