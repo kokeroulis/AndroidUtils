@@ -21,10 +21,10 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import gr.kokeroulis.jsonapiparser.models.JsonApiJson;
 import gr.kokeroulis.jsonapiparser.models.JsonMapper;
 import gr.kokeroulis.jsonapiparser.models.RelationshipsModel;
 import gr.kokeroulis.jsonapiparser.models.TypeIDMapper;
-import gr.kokeroulis.jsonapiparser.models.JsonApiJson;
 import rx.Observable;
 
 public class JsonMapperAdapter {
@@ -34,6 +34,7 @@ public class JsonMapperAdapter {
         JsonMapper mapper = new JsonMapper();
         mapper.formatedData = new ArrayList<>();
         Observable.from(json.data)
+            .filter(d -> d.relationships != null)
             .flatMap(d -> Observable.from(d.relationships.entrySet())
                 .filter(entry -> entry.getValue().data != null)
                 .filter(entry -> {
@@ -45,6 +46,7 @@ public class JsonMapperAdapter {
                         return false;
                     }
                 })
+                .filter(rel -> json.included != null )
                 .flatMap(relModel -> Observable.from(json.included)
                     .filter(f -> {
                         RelationshipsModel rel = relModel.getValue();
