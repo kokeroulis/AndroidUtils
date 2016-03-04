@@ -53,11 +53,18 @@ public class JsonMapperAdapter {
                             .filter(relData -> relData != null && json.included != null)
                             .flatMap(relData -> {
                                 if (relData instanceof List) {
-                                    return Observable.from((List<Map<String, Object>>) relData)
-                                        .flatMap(currentRelData ->
-                                            getIncludedFromRel(json, currentRelData))
-                                        .toList();
-
+                                    List<Map<String, Object>> data =
+                                        Observable.from((List<Map<String, Object>>) relData)
+                                            .flatMap(currentRelData ->
+                                                getIncludedFromRel(json, currentRelData))
+                                            .toList()
+                                            .toBlocking()
+                                            .first();
+                                    if (data.size() == 0) {
+                                        return Observable.just(relData);
+                                    } else {
+                                        return Observable.just(data);
+                                    }
                                 } else {
                                     return Observable.just((Map<String, Object>) relData)
                                         .flatMap(currentRelData ->
