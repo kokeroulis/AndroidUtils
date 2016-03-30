@@ -20,6 +20,8 @@ public class Mapper {
     private static final String DATA = "data";
     private static final String RELATIONSHIPS = "relationships";
     private static final String TYPE = "type";
+    private static final String INCLUDED = "included";
+    private static final String ID = "id";
 
 
     //private final JsonApiJson json;
@@ -67,11 +69,28 @@ public class Mapper {
                 Map<String, Object> relMap = TypeUtils.castObjectToMap(entrySet.getValue());
                 Map<String, Object> relData = getRelationshipData(relMap);
                 if (relData.get(TYPE).equals(relationship.type())) {
-                    elementObject.put(field.getName(), getRelationshipData(relMap));
+                    Map<String, Object> helper = getRelationshipData(relMap);
+                    final String id = helper.get(ID).toString();
+                    getIncluded(field, jsonElement, relationship.type(), id, helper);
+                    elementObject.put(field.getName(), helper);
                 }
             }
         }
     }
+
+    private void getIncluded(final Field field, final MapperObject object,
+                             final String type, final String id, Map<String, Object> fieldMap) {
+
+        for (Map<String, Object> includedEntry : object.included) {
+            if (includedEntry.get(TYPE).equals(type) && includedEntry.get(ID).equals(id)) {
+                Map<String, Object> includedAttributes =
+                    TypeUtils.castObjectToMap(includedEntry.get(ATTRIBUTES));
+
+                fieldMap.putAll(includedAttributes);
+            }
+        }
+    }
+
 
     private static boolean hasAttributes(MapperObject object) {
         return TypeUtils.castObjectToMap(object.data.get(0)).containsKey(ATTRIBUTES);
