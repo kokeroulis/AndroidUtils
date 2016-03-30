@@ -7,7 +7,9 @@ import com.squareup.moshi.Types;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Type;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import gr.kokeroulis.jsonapiparser.models.MapperObject;
@@ -65,20 +67,35 @@ public class Mapper {
     private void getRelationships(final Field field, final Map<String, Object> relationships) {
         final Relationship relationship = TypeUtils.getAnnotation(field, Relationship.class);
         for (Map.Entry<String, Object> entrySet : relationships.entrySet()) {
-            if (entrySet.getKey().equals(field.getName())) {
+            if (entrySet.getKey().equals(relationship.type())) {
                 Map<String, Object> relMap = TypeUtils.castObjectToMap(entrySet.getValue());
-                Map<String, Object> relData = getRelationshipData(relMap);
-                if (relData.get(TYPE).equals(relationship.type())) {
-                    Map<String, Object> helper = getRelationshipData(relMap);
-                    final String id = helper.get(ID).toString();
-                    getIncluded(field, jsonElement, relationship.type(), id, helper);
-                    elementObject.put(field.getName(), helper);
+                Object relMapDataRaw = relMap.get(DATA);
+                if (List.class.isAssignableFrom(relMapDataRaw.getClass())) {
+                    List<Object> relList = (List<Object>) relMapDataRaw;
+                    for (Object ob : relList) {
+                        Map<String, Object> relObjectMap = TypeUtils.castObjectToMap(ob);
+                        getRelationshipsForObject(relObjectMap, field);
+                    }
+                } else {
+                    Map<String, Object> relData = getRelationshipData(relMap);
+                    getRelationshipsForObject(relData, field);
                 }
             }
         }
     }
 
-    private void getIncluded(final Field field, final MapperObject object,
+    private void getRelationshipsForObject(final Map<String, Object> relData, final Field field) {
+        Map<String, Object> helper = new HashMap<>();
+        helper.putAll(relData);
+        final String id = helper.get(ID).toString();
+        final String type = helper.get(TYPE).toString();
+        if (jsonElement.included != null) {
+            getIncluded(jsonElement, type, id, helper);
+        }
+        elementObject.put(field.getName(), helper);
+    }
+
+    private void getIncluded(final MapperObject object,
                              final String type, final String id, Map<String, Object> fieldMap) {
 
         for (Map<String, Object> includedEntry : object.included) {
