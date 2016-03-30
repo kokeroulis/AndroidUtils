@@ -1,7 +1,5 @@
 package gr.kokeroulis.jsonapiparser;
 
-import android.text.TextUtils;
-
 import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi;
 import com.squareup.moshi.Types;
@@ -19,6 +17,9 @@ import gr.kokeroulis.jsonapiparser.models.MapperObject;
  */
 public class Mapper {
     private static final String ATTRIBUTES = "attributes";
+    private static final String DATA = "data";
+    private static final String RELATIONSHIPS = "relationships";
+    private static final String TYPE = "type";
 
 
     //private final JsonApiJson json;
@@ -39,7 +40,7 @@ public class Mapper {
             if (!TypeUtils.isPublic(field)) {
                 continue;
             } else if (TypeUtils.isAnnotationPresent(field, Relationship.class)) {
-
+                getRelationships(field, getRelationshipsRawMap(jsonElement));
             } else if (hasAttributes(jsonElement)) {
                 final Map<String, Object> attributes = getAttributesRawMap(jsonElement);
                 getAttributes(field, attributes);
@@ -47,7 +48,7 @@ public class Mapper {
             String foo = "asdadsads";
         }
 
-        String foo = "maria";
+        String foo = "test foo";
     }
 
     private void getAttributes(final Field field, final Map<String, Object> attributes) {
@@ -59,8 +60,18 @@ public class Mapper {
     }
 
     // needs annotiation
-    private void getRelationships() {}
-
+    private void getRelationships(final Field field, final Map<String, Object> relationships) {
+        final Relationship relationship = TypeUtils.getAnnotation(field, Relationship.class);
+        for (Map.Entry<String, Object> entrySet : relationships.entrySet()) {
+            if (entrySet.getKey().equals(field.getName())) {
+                Map<String, Object> relMap = TypeUtils.castObjectToMap(entrySet.getValue());
+                Map<String, Object> relData = getRelationshipData(relMap);
+                if (relData.get(TYPE).equals(relationship.type())) {
+                    elementObject.put(field.getName(), getRelationshipData(relMap));
+                }
+            }
+        }
+    }
 
     private static boolean hasAttributes(MapperObject object) {
         return TypeUtils.castObjectToMap(object.data.get(0)).containsKey(ATTRIBUTES);
@@ -70,5 +81,20 @@ public class Mapper {
         return TypeUtils.castObjectToMap(
             TypeUtils.castObjectToMap(object.data.get(0)).get(ATTRIBUTES)
         );
+    }
+
+    private static Map<String, Object> getRelationshipsRawMap(MapperObject object) {
+        return TypeUtils.castObjectToMap(
+            TypeUtils.castObjectToMap(object.data.get(0)).get(RELATIONSHIPS)
+        );
+    }
+
+    private static Map<String, Object> getRelationshipData(final Map<String, Object> relMap) {
+        return TypeUtils.castObjectToMap(relMap.get(DATA));
+    }
+
+    private static Map<String, Object>
+    getInnerRelationshipMap(final Map<String, Object> relationships, final String key) {
+        return TypeUtils.castObjectToMap(relationships.get(key));
     }
 }

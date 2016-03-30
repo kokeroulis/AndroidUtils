@@ -20,13 +20,13 @@ public final class TypeUtils {
     }
 
     public static <A extends Annotation> boolean
-    isAnnotationPresent(final Object object, Class<A> annotation) {
-        Annotation isPresent = object.getClass().getAnnotation(annotation);
+    isAnnotationPresent(final Field field, Class<A> annotation) {
+        Annotation isPresent = field.getAnnotation(annotation);
         return isPresent != null;
     }
 
     public static <A extends Annotation> A
-    getAnnotation(final Object object, Class<A> annotation) {
-        return object.getClass().getAnnotation(annotation);
+    getAnnotation(final Field field, Class<A> annotation) {
+        return field.getAnnotation(annotation);
     }
 }
