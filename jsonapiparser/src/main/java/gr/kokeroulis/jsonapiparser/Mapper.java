@@ -2,9 +2,11 @@ package gr.kokeroulis.jsonapiparser;
 
 import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi;
+import com.squareup.moshi.Types;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -13,10 +15,7 @@ import java.util.Map;
 
 import gr.kokeroulis.jsonapiparser.models.MapperObject;
 
-/**
- * Created by kokeroulis on 26/03/16.
- */
-public class Mapper {
+public class Mapper<T> {
     private static final String ATTRIBUTES = "attributes";
     private static final String DATA = "data";
     private static final String RELATIONSHIPS = "relationships";
@@ -25,40 +24,79 @@ public class Mapper {
     private static final String ID = "id";
 
 
-    private final Map<String, Object> elementObject;
     private final MapperObject jsonElement;
+    private final Moshi mMoshi;
+    private final Type classType;
 
-    public Mapper(final String json, final Class<?> elementClass, final Moshi moshi) throws IOException {
+    public Mapper(final String json, final Type classType, final Moshi moshi) throws IOException {
         JsonAdapter<MapperObject> adapter = moshi.adapter(MapperObject.class);
+        mMoshi = moshi;
         jsonElement = adapter.fromJson(json);
+        this.classType = classType;
+    }
 
-        elementObject = new LinkedHashMap<>();
+
+    public T fromJson() throws IOException {
+        Class<?> type = Types.getRawType(classType);
+        if (List.class.isAssignableFrom(type)) {
+            Type actualType = Types.collectionElementType(classType, List.class);
+            Class<?> elementClass = (Class<?>) actualType;
+            List<Map<String, Object>> mapList = new ArrayList<>();
+            for (Map<String, Object> resourceData : jsonElement.data) {
+                mapList.add(parseResource(resourceData, elementClass));
+            }
+
+            JsonAdapter<T> adapterObject = mMoshi.adapter(classType);
+            Type mapType = Types.newParameterizedType(List.class, Map.class, String.class, Object.class);
+            JsonAdapter<List<Map<String, Object>>> mapAdapter = mMoshi.adapter(mapType);
+
+            return adapterObject.fromJson(mapAdapter.toJson(mapList));
+        } else {
+            Map<String, Object> mapObject = parseResource(
+                TypeUtils.castObjectToMap(jsonElement.data.get(0)),
+                classType.getClass()
+            );
+
+            JsonAdapter<T> adapterObject = mMoshi.adapter(classType);
+            Type mapType = Types.newParameterizedType(Map.class, String.class, Object.class);
+            JsonAdapter<Map<String, Object>> mapAdapter = mMoshi.adapter(mapType);
+            return adapterObject.fromJson(mapAdapter.toJson(mapObject));
+        }
+    }
+
+    private Map<String, Object> parseResource(Map<String, Object> resourceData, Class<?> elementClass) {
         Field[] fields = elementClass.getDeclaredFields();
+        Map<String, Object> helperResource = new LinkedHashMap<>();
         for (Field field : fields) {
             if (!TypeUtils.isPublic(field)) {
                 continue;
-            } else if (TypeUtils.isAnnotationPresent(field, Relationship.class)) {
-                getRelationships(field, getRelationshipsRawMap(jsonElement));
-            } else if (hasAttributes(jsonElement)) {
-                final Map<String, Object> attributes = getAttributesRawMap(jsonElement);
-                getAttributes(field, attributes);
             }
-            String foo = "asdadsads";
+
+            if (TypeUtils.isAnnotationPresent(field, Relationship.class)) {
+                helperResource.putAll(getRelationships(field, getRelationshipsRawMap(resourceData)));
+            } else if (hasAttributes(resourceData)) {
+                final Map<String, Object> attributes = getAttributesRawMap(resourceData);
+                helperResource.putAll(getAttributes(field, attributes));
+            }
         }
 
-        String foo = "test foo";
+        return helperResource;
     }
 
-    private void getAttributes(final Field field, final Map<String, Object> attributes) {
+    private Map<String, Object> getAttributes(final Field field, final Map<String, Object> attributes) {
+        Map<String, Object> helperMap = new LinkedHashMap<>();
         for (Map.Entry<String, Object> entrySet : attributes.entrySet()) {
             if (entrySet.getKey().equals(field.getName())) {
-                elementObject.put(entrySet.getKey(), entrySet.getValue());
+                helperMap.put(entrySet.getKey(), entrySet.getValue());
             }
         }
+
+        return helperMap;
     }
 
     // needs annotiation
-    private void getRelationships(final Field field, final Map<String, Object> relationships) {
+    private Map<String, Object> getRelationships(final Field field, final Map<String, Object> relationships) {
+        Map<String, Object> helperMap = new LinkedHashMap<>();
         final Relationship relationship = TypeUtils.getAnnotation(field, Relationship.class);
         for (Map.Entry<String, Object> entrySet : relationships.entrySet()) {
             if (entrySet.getKey().equals(relationship.type())) {
@@ -71,13 +109,15 @@ public class Mapper {
                         Map<String, Object> relObjectMap = TypeUtils.castObjectToMap(ob);
                         helperList.add(getRelationshipsForObject(relObjectMap, field));
                     }
-                    elementObject.put(field.getName(), helperList);
+                    helperMap.put(field.getName(), helperList);
                 } else {
                     Map<String, Object> relData = getRelationshipData(relMap);
-                    elementObject.put(field.getName(), getRelationshipsForObject(relData, field));
+                    helperMap.put(field.getName(), getRelationshipsForObject(relData, field));
                 }
             }
         }
+
+        return helperMap;
     }
 
     private Map<String, Object> getRelationshipsForObject(final Map<String, Object> relData, final Field field) {
@@ -105,21 +145,16 @@ public class Mapper {
         }
     }
 
-
-    private static boolean hasAttributes(MapperObject object) {
-        return TypeUtils.castObjectToMap(object.data.get(0)).containsKey(ATTRIBUTES);
+    private static boolean hasAttributes(Map<String, Object> object) {
+        return object.containsKey(ATTRIBUTES);
     }
 
-    private static Map<String, Object> getAttributesRawMap(MapperObject object) {
-        return TypeUtils.castObjectToMap(
-            TypeUtils.castObjectToMap(object.data.get(0)).get(ATTRIBUTES)
-        );
+    private static Map<String, Object> getAttributesRawMap(Map<String, Object> object) {
+        return TypeUtils.castObjectToMap(object.get(ATTRIBUTES));
     }
 
-    private static Map<String, Object> getRelationshipsRawMap(MapperObject object) {
-        return TypeUtils.castObjectToMap(
-            TypeUtils.castObjectToMap(object.data.get(0)).get(RELATIONSHIPS)
-        );
+    private static Map<String, Object> getRelationshipsRawMap(Map<String, Object> object) {
+        return TypeUtils.castObjectToMap(object.get(RELATIONSHIPS));
     }
 
     private static Map<String, Object> getRelationshipData(final Map<String, Object> relMap) {

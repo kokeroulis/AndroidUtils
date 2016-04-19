@@ -1,10 +1,11 @@
 package gr.kokeroulis.jsonapiparser;
 
-/**
- * Created by kokeroulis on 30/03/16.
- */
+import com.squareup.moshi.Json;
+
 public class Author {
+    @Json(name = "first-name")
     public String first_name;
+    @Json(name = "last-name")
     public String last_name;
     public String twitter;
 }
