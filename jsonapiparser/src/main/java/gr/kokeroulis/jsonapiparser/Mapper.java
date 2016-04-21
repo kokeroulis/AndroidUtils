@@ -54,7 +54,7 @@ public class Mapper<T> {
         } else {
             Map<String, Object> mapObject = parseResource(
                 TypeUtils.castObjectToMap(jsonElement.data.get(0)),
-                classType.getClass()
+                (Class) classType
             );
 
             JsonAdapter<T> adapterObject = mMoshi.adapter(classType);

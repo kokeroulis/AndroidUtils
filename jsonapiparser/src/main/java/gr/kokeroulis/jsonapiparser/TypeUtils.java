@@ -3,7 +3,6 @@ package gr.kokeroulis.jsonapiparser;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
-import java.lang.reflect.Type;
 import java.util.Map;
 
 public final class TypeUtils {
@@ -27,8 +26,8 @@ public final class TypeUtils {
     }
 
     public static <A extends Annotation> boolean
-    isAnnotationPresent(final Type type, Class<A> annotation) {
-        Annotation isPresent = type.getClass().getAnnotation(annotation);
+    isAnnotationPresent(final Class<?> classType, Class<A> annotation) {
+        Annotation isPresent = classType.getAnnotation(annotation);
         return isPresent != null;
     }
 
