@@ -1,5 +1,7 @@
 package gr.kokeroulis.jsonapiparser;
 
+import android.text.TextUtils;
+
 import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi;
 import com.squareup.moshi.Types;
@@ -35,6 +37,16 @@ public class Mapper<T> {
         this.classType = classType;
     }
 
+    private Mapper(final Moshi moshi) {
+        this.mMoshi = moshi;
+        classType = null;
+        jsonElement = null;
+    }
+
+    public static <T> Mapper<T> nullSafe(final Moshi moshi) {
+        return new Mapper<T>(moshi);
+    }
+
 
     public T fromJson() throws IOException {
         Class<?> type = Types.getRawType(classType);
@@ -62,6 +74,55 @@ public class Mapper<T> {
             JsonAdapter<Map<String, Object>> mapAdapter = mMoshi.adapter(mapType);
             return adapterObject.fromJson(mapAdapter.toJson(mapObject));
         }
+    }
+
+    public Map<String, Object> toJson(Object object) throws IOException, IllegalAccessException{
+        Class<?> objectClass = object.getClass();
+        Map<String, Object> helper = new LinkedHashMap<>();
+        Map<String, Object> embeddedHelper = new LinkedHashMap<>();
+        for (Field field : objectClass.getDeclaredFields()) {
+            if (field.getName().equals(TYPE)) {
+                String type = field.get(object).toString();
+                helper.put(TYPE, type);
+            } else if (field.getName().equals(ID)) {
+                String id = field.get(object).toString();
+                helper.put(field.getName(), id);
+            } else if (TypeUtils.isAnnotationPresent(field, BulkResource.class)) {
+                BulkResource bulkResource = field.getAnnotation(BulkResource.class);
+                Object embeddedObject = field.get(object);
+                Class embeddedClass = bulkResource.classType();
+
+                if (List.class.isAssignableFrom(embeddedObject.getClass())) {
+                    List<Object> objects = (List) embeddedObject;
+                    for (Object objectFromList : objects) {
+                        String bulkKey = "";
+                        String bulkValue = "";
+                        for (Field embeddedField : embeddedClass.getDeclaredFields()) {
+                            if (TypeUtils.isAnnotationPresent(embeddedField, BulkResourceThis.class)) {
+                                BulkResourceThis bulkThis = embeddedField.getAnnotation(BulkResourceThis.class);
+                                if (bulkThis.isKey()) {
+                                    bulkKey = getValueFromField(embeddedField,objectFromList);
+                                } else {
+                                    bulkValue = getValueFromField(embeddedField,objectFromList);
+                                }
+                            }
+                        }
+                        if (!TextUtils.isEmpty(bulkKey) && !TextUtils.isEmpty(bulkValue)) {
+                            embeddedHelper.put(bulkKey, bulkValue);
+                        }
+                    }
+                }
+            }
+        }
+
+        helper.put("attributes", embeddedHelper);
+        Map<String, Object> data = new LinkedHashMap<>();
+        data.put("data", helper);
+        return data;
+    }
+
+    private String getValueFromField(final Field field, final Object object)  throws IllegalAccessException{
+        return field.get(object).toString();
     }
 
     private Map<String, Object> parseResource(Map<String, Object> resourceData, Class<?> elementClass) {

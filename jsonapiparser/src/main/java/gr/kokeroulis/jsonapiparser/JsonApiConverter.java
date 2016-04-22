@@ -80,6 +80,13 @@ public class JsonApiConverter implements Converter {
 
             final String json;
             final Annotation jsonRaw = object.getClass().getAnnotation(JsonRaw.class);
+            if (TypeUtils.isAnnotationPresent(object.getClass(), Resource.class)) {
+                Mapper<Map<String, Object>> mapper = Mapper.nullSafe(mMoshi);
+                Type mapType = Types.newParameterizedType(Map.class, String.class, Object.class);
+                JsonAdapter<Map<String, Object>> adapter = mMoshi.adapter(mapType);
+                Map<String, Object> data = mapper.toJson(object);
+                return new JsonTypedOutput(adapter.toJson(data));
+            }
             if (jsonRaw == null) {
                 json = toJsonApi(object);
             } else {
