@@ -144,7 +144,12 @@ public class JsonApiConverter implements Converter {
             return json;
         }
 
-        Class<?> typeClass = (Class<?>) type;
+        Class <?> typeClass;
+        if (List.class.isAssignableFrom(Types.getRawType(type))) {
+            typeClass = (Class<?>) Types.collectionElementType(type, List.class);
+        } else {
+            typeClass = (Class<?>) type;
+        }
         if (TypeUtils.isAnnotationPresent(typeClass, Resource.class)) {
             Mapper<Object> mapper = new Mapper<>(json, type, mMoshi);
             Object data =  mapper.fromJson();
