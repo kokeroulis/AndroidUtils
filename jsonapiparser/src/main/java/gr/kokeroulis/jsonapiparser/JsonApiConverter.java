@@ -49,6 +49,9 @@ public class JsonApiConverter implements Converter {
     @Override
     public Object fromBody(TypedInput body, Type type) throws ConversionException {
         try {
+            if (body.length() == 0) {
+                return null;
+            }
             InputStream in = body.in();
             String json = fromJsonApi(fromStream(in), type);
 
