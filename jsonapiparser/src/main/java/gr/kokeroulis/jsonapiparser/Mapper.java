@@ -141,6 +141,10 @@ public class Mapper<T> {
             }
         }
 
+
+        if (resourceData.containsKey(ID)) {
+            helperResource.put(ID, resourceData.get("id"));
+        }
         return helperResource;
     }
 
