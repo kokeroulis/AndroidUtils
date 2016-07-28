@@ -36,6 +36,10 @@ public class JsonMapperAdapter {
             .doOnNext(dataMapper -> {
                 Object attrs = dataMapper.get("attributes");
                 dataMapper.putAll(castObjectToMap(attrs));
+                if ( dataMapper.containsKey("meta")) {
+                    Map<String, Object> meta = (Map) dataMapper.get("meta");
+                    dataMapper.putAll(meta);
+                }
                 dataMapper.remove("attributes");
 
                 if (!dataMapper.containsKey("relationships")) {
