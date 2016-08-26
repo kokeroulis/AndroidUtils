@@ -24,6 +24,7 @@ public class Mapper<T> {
     private static final String TYPE = "type";
     private static final String INCLUDED = "included";
     private static final String ID = "id";
+    private static final String META ="meta";
 
 
     private final MapperObject jsonElement;
@@ -206,6 +207,10 @@ public class Mapper<T> {
                     TypeUtils.castObjectToMap(includedEntry.get(ATTRIBUTES));
 
                 fieldMap.putAll(includedAttributes);
+                if (includedEntry.containsKey(META)) {
+                    Map<String, Object> meta = TypeUtils.castObjectToMap(includedEntry.get(META));
+                    fieldMap.put(META, meta);
+                }
             }
         }
     }
