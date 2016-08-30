@@ -168,6 +168,9 @@ public class Mapper<T> {
             if (entrySet.getKey().equals(relationship.type())) {
                 Map<String, Object> relMap = TypeUtils.castObjectToMap(entrySet.getValue());
                 Object relMapDataRaw = relMap.get(DATA);
+                if (relMapDataRaw == null) {
+                    continue;
+                }
                 if (List.class.isAssignableFrom(relMapDataRaw.getClass())) {
                     List<Object> relList = (List<Object>) relMapDataRaw;
                     List<Map<String, Object>> helperList = new ArrayList<>();
