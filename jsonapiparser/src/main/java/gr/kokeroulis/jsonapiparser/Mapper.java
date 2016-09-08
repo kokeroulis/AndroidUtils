@@ -152,8 +152,15 @@ public class Mapper<T> {
     private Map<String, Object> getAttributes(final Field field, final Map<String, Object> attributes) {
         Map<String, Object> helperMap = new LinkedHashMap<>();
         for (Map.Entry<String, Object> entrySet : attributes.entrySet()) {
-            if (entrySet.getKey().equals(field.getName())) {
-                helperMap.put(entrySet.getKey(), entrySet.getValue());
+            final String fieldName;
+            if (TypeUtils.isAnnotationPresent(field, ReverseFieldJson.class)) {
+                ReverseFieldJson reverseFieldJson = field.getAnnotation(ReverseFieldJson.class);
+                fieldName = reverseFieldJson.name();
+            } else {
+                fieldName = field.getName();
+            }
+            if (entrySet.getKey().equals(fieldName)) {
+                helperMap.put(field.getName(), entrySet.getValue());
             }
         }
 
