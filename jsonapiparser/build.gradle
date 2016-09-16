@@ -36,5 +36,5 @@ dependencies {
     compile rootProject.ext.retrofit
     compile rootProject.ext.moshi
     compile rootProject.ext.moshi_adapters
-    androidTestCompile 'org.testng:testng:6.9.6'
+    compile rootProject.ext.retrofit2
 }
