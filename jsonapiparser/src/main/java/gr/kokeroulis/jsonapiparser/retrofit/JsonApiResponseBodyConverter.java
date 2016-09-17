@@ -14,7 +14,6 @@ import gr.kokeroulis.jsonapiparser.Resource;
 import gr.kokeroulis.jsonapiparser.TypeUtils;
 import gr.kokeroulis.jsonapiparser.models.JsonMapper;
 import okhttp3.ResponseBody;
-import okio.BufferedSource;
 import retrofit2.Converter;
 
 public class JsonApiResponseBodyConverter <T> implements Converter<ResponseBody, T> {
@@ -30,7 +29,6 @@ public class JsonApiResponseBodyConverter <T> implements Converter<ResponseBody,
 
     @Override
     public T convert(ResponseBody value) throws IOException {
-        BufferedSource source = value.source();
         final String json = value.string();
 
         Class <?> typeClass;

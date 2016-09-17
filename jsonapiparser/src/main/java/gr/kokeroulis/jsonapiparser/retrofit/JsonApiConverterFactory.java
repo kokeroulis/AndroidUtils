@@ -27,6 +27,6 @@ public class JsonApiConverterFactory extends Converter.Factory {
     @Override
     public Converter<?, RequestBody> requestBodyConverter(Type type, Annotation[] parameterAnnotations, Annotation[] methodAnnotations, Retrofit retrofit) {
         final JsonAdapter<?> adapter = mMoshi.adapter(type);
-        return new RetrofitRequestBodyConverter<>(mMoshi, adapter);
+        return new JsonApiRequestBodyConverter<>(mMoshi, adapter);
     }
 }

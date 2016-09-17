@@ -14,12 +14,12 @@ import okhttp3.RequestBody;
 import okio.Buffer;
 import retrofit2.Converter;
 
-public class RetrofitRequestBodyConverter<T> implements Converter<T, RequestBody> {
+public class JsonApiRequestBodyConverter<T> implements Converter<T, RequestBody> {
     private static final MediaType MEDIA_TYPE = MediaType.parse("application/json; charset=UTF-8");
     private final Moshi mMoshi;
     private final JsonAdapter<T> mAdapter;
 
-    public RetrofitRequestBodyConverter(Moshi moshi, JsonAdapter<T> adapter) {
+    public JsonApiRequestBodyConverter(Moshi moshi, JsonAdapter<T> adapter) {
         mMoshi = moshi;
         mAdapter = adapter;
     }
