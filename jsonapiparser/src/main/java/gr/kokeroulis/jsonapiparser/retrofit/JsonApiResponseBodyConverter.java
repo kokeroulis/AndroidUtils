@@ -31,7 +31,7 @@ public class JsonApiResponseBodyConverter <T> implements Converter<ResponseBody,
     @Override
     public T convert(ResponseBody value) throws IOException {
         BufferedSource source = value.source();
-        final String json = source.toString();
+        final String json = value.string();
 
         Class <?> typeClass;
 
