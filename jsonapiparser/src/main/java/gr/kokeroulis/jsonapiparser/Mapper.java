@@ -142,9 +142,12 @@ public class Mapper<T> {
             }
         }
 
-
         if (resourceData.containsKey(ID)) {
             helperResource.put(ID, resourceData.get("id"));
+        }
+
+        if (resourceData.containsKey(META)) {
+            helperResource.put(META, getMetaRawMap(resourceData));
         }
         return helperResource;
     }
@@ -231,6 +234,10 @@ public class Mapper<T> {
 
     private static Map<String, Object> getAttributesRawMap(Map<String, Object> object) {
         return TypeUtils.castObjectToMap(object.get(ATTRIBUTES));
+    }
+
+    private static Map<String, Object> getMetaRawMap(Map<String, Object> object) {
+        return TypeUtils.castObjectToMap(object.get(META));
     }
 
     private static Map<String, Object> getRelationshipsRawMap(Map<String, Object> object) {
