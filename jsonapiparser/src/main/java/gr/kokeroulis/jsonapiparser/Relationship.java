@@ -9,4 +9,10 @@ import java.lang.annotation.Target;
 @Target(value = ElementType.FIELD)
 public @interface Relationship {
     String type();
+
+    /* Sometimes we have two relationships which has
+     * the same type inside the included.
+     * so we use this attribute in order to separate them
+     */
+    String fieldNameFallback() default "";
 }

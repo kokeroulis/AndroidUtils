@@ -188,7 +188,13 @@ public class Mapper<T> {
                         Map<String, Object> relObjectMap = TypeUtils.castObjectToMap(ob);
                         helperList.add(getRelationshipsForObject(relObjectMap, field));
                     }
-                    helperMap.put(field.getName(), helperList);
+                    final String fieldName;
+                    if (TextUtils.isEmpty(relationship.fieldNameFallback())) {
+                        fieldName = field.getName();
+                    } else {
+                        fieldName = relationship.fieldNameFallback();
+                    }
+                    helperMap.put(fieldName, helperList);
                 } else {
                     Map<String, Object> relData = getRelationshipData(relMap);
                     helperMap.put(field.getName(), getRelationshipsForObject(relData, field));
