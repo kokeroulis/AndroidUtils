@@ -13,6 +13,7 @@ import gr.kokeroulis.jsonapiparser.Mapper;
 import gr.kokeroulis.jsonapiparser.Resource;
 import gr.kokeroulis.jsonapiparser.TypeUtils;
 import gr.kokeroulis.jsonapiparser.models.JsonMapper;
+import okhttp3.MediaType;
 import okhttp3.ResponseBody;
 import retrofit2.Converter;
 
@@ -25,6 +26,12 @@ public class JsonApiResponseBodyConverter <T> implements Converter<ResponseBody,
         this.type = type;
         this.mMoshi = moshi;
         this.mAdapter = adapter;
+    }
+
+    public T convert(String json) throws IOException {
+        return convert(
+            ResponseBody.create(MediaType.parse("application/json"), json)
+        );
     }
 
     @Override

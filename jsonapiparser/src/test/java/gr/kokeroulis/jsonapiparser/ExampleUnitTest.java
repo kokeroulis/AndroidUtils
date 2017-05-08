@@ -11,7 +11,7 @@ import java.util.List;
 
 public class ExampleUnitTest {
 
-
+/*
     @Test public void loadJson() {
         Moshi moshi = new Moshi.Builder().build();
         try {
@@ -21,6 +21,6 @@ public class ExampleUnitTest {
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }
+    }*/
 
 }
