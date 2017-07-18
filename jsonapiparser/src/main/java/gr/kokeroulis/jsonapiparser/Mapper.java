@@ -130,7 +130,8 @@ public class Mapper<T> {
         Field[] fields = elementClass.getDeclaredFields();
         Map<String, Object> helperResource = new LinkedHashMap<>();
         for (Field field : fields) {
-            if (!TypeUtils.isPublic(field)) {
+            // a private field might be a kotlin property, so check for transient
+            if (TypeUtils.isTransient(field)) {
                 continue;
             }
 

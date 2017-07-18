@@ -11,6 +11,10 @@ public final class TypeUtils {
         return Modifier.isPublic(f.getModifiers());
     }
 
+    public static boolean isTransient(Field f) {
+        return Modifier.isTransient(f.getModifiers());
+    }
+
     public static Map<String, Object> castObjectToMap(final Object target) {
         if (!(target instanceof Map)) {
             throw new IllegalArgumentException(target.toString() + " Cannot be converted to map");
