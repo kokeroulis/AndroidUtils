@@ -206,7 +206,8 @@ public class Mapper<T> {
         return helperMap;
     }
 
-    private Map<String, Object> getRelationshipsForObject(final Map<String, Object> relData, final Field field) {
+    private Map<String, Object> getRelationshipsForObject(final Map<String, Object> relData,
+                                                          final Field field) {
         Map<String, Object> helper = new HashMap<>();
         helper.putAll(relData);
         final String id = helper.get(ID).toString();
@@ -227,6 +228,10 @@ public class Mapper<T> {
                     TypeUtils.castObjectToMap(includedEntry.get(ATTRIBUTES));
 
                 fieldMap.putAll(includedAttributes);
+                fieldMap.put(RELATIONSHIPS,
+                    TypeUtils.castObjectToMap(includedEntry.get(RELATIONSHIPS))
+                );
+
                 if (includedEntry.containsKey(META)) {
                     Map<String, Object> meta = TypeUtils.castObjectToMap(includedEntry.get(META));
                     fieldMap.put(META, meta);
